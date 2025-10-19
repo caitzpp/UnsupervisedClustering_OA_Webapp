@@ -18,12 +18,29 @@ data_loader = HDBSCAN_DataLoader(PROCESSED_DATA_PATH, folder, run)
 df, model_info, embeddings, ids = data_loader.load_pipeline_data()
 
 
-
+df_filtered = df[df['id'].isin(ids)]
+clusters = df_filtered['cluster_label']
+mri_cart = df_filtered['mri_cart_YN']
+kl_score = df_filtered['KL-score']
 
 # Initialize the app
 app = Dash(__name__)
 
-fig = px.scatter(embeddings)
+fig = go.Figure()
+fig.add_trace(go.Scatter3d(
+    x=embeddings[:, 0],
+    y=embeddings[:, 1],
+    z=embeddings[:, 2],
+    mode='markers',
+    marker=dict(
+        size=5,
+        # color=df['hdbscan_labels'],  
+        # colorscale='Viridis',  
+        # opacity=0.8
+    ),
+    ids=clusters,
+    hovertemplate="Cluster Label=%{text}"
+))
 
 app.layout = [
     html.Div(children='My First App with Data, Graph, and Controls'),
