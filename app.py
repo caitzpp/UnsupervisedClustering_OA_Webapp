@@ -31,13 +31,15 @@ mapping = {
 app = Dash(__name__)
 
 fig = go.Figure()
-fig.add_trace(go.Scatter3d(
+traces = []
+base = go.Scatter3d(
     x=embeddings[:, 0],
     y=embeddings[:, 1],
     z=embeddings[:, 2],
     mode='markers',
     marker=dict(
         size=5,
+        color='lightgray'
         # color=df['hdbscan_labels'],  
         # colorscale='Viridis',  
         # opacity=0.8
@@ -47,7 +49,8 @@ fig.add_trace(go.Scatter3d(
         [v['cluster_label'], v['KL-Score']] for v in mapping.values()
     ],
     hovertemplate='Cluster Label=%{customdata[0]}'
-))
+)
+fig.add_trace(base)
 
 app.layout = [
     html.Div(children='My First App with Data, Graph, and Controls'),
