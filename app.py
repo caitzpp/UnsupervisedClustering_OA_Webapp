@@ -18,10 +18,14 @@ data_loader = HDBSCAN_DataLoader(PROCESSED_DATA_PATH, folder, run)
 df, model_info, embeddings, ids = data_loader.load_pipeline_data()
 
 
-df_filtered = df[df['id'].isin(ids)]
-clusters = df_filtered['cluster_label']
-mri_cart = df_filtered['mri_cart_YN']
-kl_score = df_filtered['KL-score']
+mapping = {
+    i: {
+        "cluster_label": df.loc[df['id'] == i, 'cluster_label'].values[0],
+      #  "mri_cart_YN": df.loc[df['id'] == i, 'mri_cart_YN'].values[0],
+        "KL-Score": df.loc[df['id'] == i, 'KL-Score'].values[0],
+    }
+    for i in ids
+}
 
 # Initialize the app
 app = Dash(__name__)
@@ -38,8 +42,11 @@ fig.add_trace(go.Scatter3d(
         # colorscale='Viridis',  
         # opacity=0.8
     ),
-    ids=clusters,
-    hovertemplate="Cluster Label=%{text}"
+    #ids=[v['cluster_label'] for v in mapping.values()],
+    customdata=[
+        [v['cluster_label'], v['KL-Score']] for v in mapping.values()
+    ],
+    hovertemplate='Cluster Label=%{customdata[0]}'
 ))
 
 app.layout = [
