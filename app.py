@@ -7,6 +7,7 @@ import config
 import numpy as np
 
 from src.load_data import HDBSCAN_DataLoader
+from traces.base import BaseTrace
 
 PROCESSED_DATA_PATH = config.PROCESSED_DATA_PATH
 
@@ -32,25 +33,8 @@ app = Dash(__name__)
 
 fig = go.Figure()
 traces = []
-base = go.Scatter3d(
-    x=embeddings[:, 0],
-    y=embeddings[:, 1],
-    z=embeddings[:, 2],
-    mode='markers',
-    marker=dict(
-        size=5,
-        color='lightgray'
-        # color=df['hdbscan_labels'],  
-        # colorscale='Viridis',  
-        # opacity=0.8
-    ),
-    #ids=[v['cluster_label'] for v in mapping.values()],
-    customdata=[
-        [v['cluster_label'], v['KL-Score']] for v in mapping.values()
-    ],
-    hovertemplate='Cluster Label=%{customdata[0]}'
-)
-fig.add_trace(base)
+base = BaseTrace(embeddings, mapping)
+fig.add_trace(base.create_trace())
 
 app.layout = [
     html.Div(children='My First App with Data, Graph, and Controls'),
