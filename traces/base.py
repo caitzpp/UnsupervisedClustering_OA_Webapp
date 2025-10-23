@@ -29,3 +29,18 @@ class BaseTrace:
             hovertemplate='Cluster Label=%{customdata[0]}'
         )
         return trace
+    
+
+class BaseLegend:
+    def __init__(self, title="Legend", y=0.65):
+        self.title = title
+        self.y = y
+
+    def create_legend(self):
+        legend = dict(
+            title= dict(text=self.title),
+            xref="container",
+            yref="container",
+            y=self.y,
+        )
+        return legend
