@@ -70,7 +70,6 @@ noise_trace = BaseTrace(embeddings_noise, mappings_noise, color='black', showleg
                         name = 'Noise Points')
 trace_noise = noise_trace.create_trace()
 trace_noise.legendgroup = "noise"
-# trace_noise.visible = 'legendonly'
 fig2.add_trace(trace_noise)
 fig2.update_layout(scene = dict(
         xaxis_title='UMAP 1',
@@ -80,30 +79,20 @@ fig2.update_layout(scene = dict(
     , scene_dragmode = 'turntable'
 )
 
-# app.layout = [
-#     html.Div(children='My First App with Data, Graph, and Controls'),
-#     html.Hr(),
-#     dcc.RadioItems(options = ['KL-Scores',  'Noise Points'],
-#          value='KL-Scores', id='scatter_radioitem'),
-#     html.Img(src="", style={"width": "200px"}, id='image-display'),
-#     #dash_table.DataTable(data=df.to_dict('records'), page_size=6),
-#     dcc.Graph(figure={}, id='scatter', responsive=True
-#               , style={'width': '100%', 'height': '100%'}),
-# ]
-
 app.layout = html.Div([
     html.Div([
-        dcc.RadioItems(options = ['KL-Scores',  'Noise Points'],
-            value='KL-Scores', id='scatter_radioitem'),
+        dcc.Dropdown(options = ['KL-Scores',  'Noise Points'],
+            value='KL-Scores', id='scatter_radioitem', clearable=False
+            ,style={'width': '200px', 'marginBottom': '10px'}),
     ]),
     html.Div([
-            dcc.Graph(figure={}, id='scatter' #, responsive=True
+            dcc.Graph(figure={}, id='scatter' 
                , style={'width': '64%', 'height': '80vh'}),
             html.Img(src="", id='image-display',
                     style={'display': 'none'}),
 
     ], style={
-        'display': 'flex',         # horizontal layout
+        'display': 'flex',        
         'justify-content': 'flex-start',
         'align-items': 'flex-start'
     })
@@ -122,7 +111,6 @@ def update_scatter(selected_radio):
 @callback(
     Output('image-display', 'src'),
     Output('image-display', 'style'),
-    #Output("debug",'children'),
     Input('scatter', 'clickData')
     )
 def show_image(clickData):
@@ -137,16 +125,13 @@ def show_image(clickData):
 
         test = os.path.exists(os.path.join('assets', f"{id_}.png"))
         if test:
-            # print("Image path exists")
             return os.path.join('assets', f"{id_}.png"), {'width': '30%',
                         'height': '80vh',
-                        'object-fit': 'contain',  # keeps image aspect ratio
+                        'object-fit': 'contain', 
                         'margin-left': '2%'
                     }
         else:
-            # print("Image path does not exist")
             return dash.no_update, {'display': 'none'}
-    # return str(img_path)
 
 
 if __name__ == '__main__':
