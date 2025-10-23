@@ -28,7 +28,8 @@ class BaseTrace:
             name=self.name,
             legend=self.legend,
             customdata=[
-                [(id_, v[col]) for col in trace_columns] for id_, v in self.mapping.items()
+                 [id_] + [v[col] for col in trace_columns]
+                    for id_, v in self.mapping.items()
             ],
             hovertemplate=('<br>'.join([f"{k}=%{{customdata[{v}]}}" for k, v in hovertemplate_mappinges.items()]) + '<extra></extra>')
         )
