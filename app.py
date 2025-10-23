@@ -37,8 +37,6 @@ fig.add_trace(base.create_trace())
 legend_kl = BaseLegend(title='KL-Score', y=0.5)
 fig.update_layout(legend=legend_kl.create_legend())
 
-legend_noise = BaseLegend(title='Noise Points', y=0.9)
-fig.update_layout(legend2=legend_noise.create_legend())
 kl_color = {kl: pal[i] for i, kl in enumerate(klvalues)}
 for kl in klvalues:
     embeddings_kl = embeddings_kl_d[str(int(kl))]
@@ -48,8 +46,20 @@ for kl in klvalues:
     trace_new = new_trace.create_trace()
     trace_new.legendgroup = f"kl_{kl}"
     fig.add_trace(trace_new)
+fig.update_layout(
+    legend_groupclick = "toggleitem",
+    legend_itemclick = "toggleothers",
+    scene = dict(
+        xaxis_title='UMAP 1',
+        yaxis_title='UMAP 2',
+        zaxis_title='UMAP 3'
+    )
+    , scene_dragmode = 'turntable'
+)
 
 fig2 = go.Figure()
+legend_noise = BaseLegend(title='Noise Points', y=0.9)
+fig2.update_layout(legend2=legend_noise.create_legend())
 fig2.add_trace(base.create_trace())
 noise_trace = BaseTrace(embeddings_noise, mappings_noise, color='black', showlegend=True, legend="legend2",
                         name = 'Noise Points')
@@ -57,10 +67,13 @@ trace_noise = noise_trace.create_trace()
 trace_noise.legendgroup = "noise"
 # trace_noise.visible = 'legendonly'
 fig2.add_trace(trace_noise)
-
-# fig.update_layout(
-#     legend_groupclick = "toggleitem",
-#     legend_itemclick="toggle")
+fig2.update_layout(scene = dict(
+        xaxis_title='UMAP 1',
+        yaxis_title='UMAP 2',
+        zaxis_title='UMAP 3'
+    )
+    , scene_dragmode = 'turntable'
+)
 
 app.layout = [
     html.Div(children='My First App with Data, Graph, and Controls'),
