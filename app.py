@@ -24,7 +24,6 @@ klvalues = list(set(df['KL-Score'].values))
 
 mappings_kl, embeddings_kl_d = data_loader.load_data_by_kl()
 mappings_noise, embeddings_noise = data_loader.load_data_by_filter('cluster_label', -1)
-# mappings_noise = data_loader.load_data_by_binaryfilter('cluster_label', -1)
 
 pal = px.colors.qualitative.Safe
 
@@ -40,8 +39,6 @@ fig.update_layout(legend=legend_kl.create_legend())
 
 legend_noise = BaseLegend(title='Noise Points', y=0.9)
 fig.update_layout(legend2=legend_noise.create_legend())
-# print(mappings_kl['1'])
-# sys.exit()
 kl_color = {kl: pal[i] for i, kl in enumerate(klvalues)}
 for kl in klvalues:
     embeddings_kl = embeddings_kl_d[str(int(kl))]
@@ -50,17 +47,16 @@ for kl in klvalues:
                           , legend="legend", name =f"{kl}")
     trace_new = new_trace.create_trace()
     trace_new.legendgroup = f"kl_{kl}"
-    trace_new.legend_itemclick="togglegroup"
     fig.add_trace(trace_new)
 
+fig2 = go.Figure()
+fig2.add_trace(base.create_trace())
 noise_trace = BaseTrace(embeddings_noise, mappings_noise, color='black', showlegend=True, legend="legend2",
                         name = 'Noise Points')
 trace_noise = noise_trace.create_trace()
 trace_noise.legendgroup = "noise"
-trace_noise.visible = 'legendonly'
-trace_noise.legend_groupclick = "toggleitem"
-trace_noise.legend_itemclick="toggle"
-fig.add_trace(trace_noise)
+# trace_noise.visible = 'legendonly'
+fig2.add_trace(trace_noise)
 
 # fig.update_layout(
 #     legend_groupclick = "toggleitem",
@@ -69,10 +65,21 @@ fig.add_trace(trace_noise)
 app.layout = [
     html.Div(children='My First App with Data, Graph, and Controls'),
     html.Hr(),
-    #dcc.RadioItems(options=['pop', 'lifeExp', 'gdpPercap'], value='lifeExp', id='controls-and-radio-item'),
+    dcc.RadioItems(options = ['KL-Scores',  'Noise Points'],
+         value='KL-Scores', id='scatter_radioitem'),
     #dash_table.DataTable(data=df.to_dict('records'), page_size=6),
-    dcc.Graph(figure=fig, id='scatter')
+    dcc.Graph(figure={}, id='scatter'),
 ]
+
+@callback(
+    Output('scatter', 'figure'),
+    Input('scatter_radioitem', 'value')
+)
+def update_scatter(selected_radio):
+    if selected_radio == 'KL-Scores':
+        return fig
+    else:
+        return fig2
 
 if __name__ == '__main__':
     app.run(debug=True)
