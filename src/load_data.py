@@ -132,3 +132,24 @@ class HDBSCAN_DataLoader(DataLoader):
         embeddings_filt = embeddings[idx_filt, :]
 
         return mapping_filt, embeddings_filt
+    
+    def load_data_by_binaryfilter(self, filter_column: str, filter_values: int):
+        if self.df is None:
+            df, _, embeddings, ids = self.load_pipeline_data()
+        else:
+            df = self.df
+            embeddings = self.embeddings
+            ids = self.ids
+
+        df['filter_temp'] = df[filter_column].apply(lambda x: 'other' if x != filter_values else "noise")
+
+        mapping_filt = {
+            i: {
+                "cluster_label": df.loc[df['id'] == i, 'cluster_label'].values[0],
+                "KL-Score": df.loc[df['id'] == i, 'KL-Score'].values[0],
+                "noise_label": df.loc[df['id'] == i, 'filter_temp'].values[0],
+            }
+            for i in ids
+        }
+
+        return mapping_filt

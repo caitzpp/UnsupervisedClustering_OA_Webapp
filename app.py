@@ -24,6 +24,7 @@ klvalues = list(set(df['KL-Score'].values))
 
 mappings_kl, embeddings_kl_d = data_loader.load_data_by_kl()
 mappings_noise, embeddings_noise = data_loader.load_data_by_filter('cluster_label', -1)
+# mappings_noise = data_loader.load_data_by_binaryfilter('cluster_label', -1)
 
 pal = px.colors.qualitative.Safe
 
@@ -49,19 +50,21 @@ for kl in klvalues:
                           , legend="legend", name =f"{kl}")
     trace_new = new_trace.create_trace()
     trace_new.legendgroup = f"kl_{kl}"
-
+    trace_new.legend_itemclick="togglegroup"
     fig.add_trace(trace_new)
 
 noise_trace = BaseTrace(embeddings_noise, mappings_noise, color='black', showlegend=True, legend="legend2",
-                        name ='Noise Points')
+                        name = 'Noise Points')
 trace_noise = noise_trace.create_trace()
 trace_noise.legendgroup = "noise"
 trace_noise.visible = 'legendonly'
+trace_noise.legend_groupclick = "toggleitem"
+trace_noise.legend_itemclick="toggle"
 fig.add_trace(trace_noise)
 
-fig.update_layout(
-    legend_groupclick = "toggleitem",
-    legend_itemclick="toggleothers")
+# fig.update_layout(
+#     legend_groupclick = "toggleitem",
+#     legend_itemclick="toggle")
 
 app.layout = [
     html.Div(children='My First App with Data, Graph, and Controls'),
