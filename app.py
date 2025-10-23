@@ -95,20 +95,15 @@ app.layout = html.Div([
     html.Div([
             dcc.RadioItems(options = ['KL-Scores',  'Noise Points'],
             value='KL-Scores', id='scatter_radioitem'),
-            dcc.Graph(figure={}, id='scatter', responsive=True
-               , style={'width': '100%', 'height': '80vh'}),
+            dcc.Graph(figure={}, id='scatter' #, responsive=True
+               , style={'width': '64%', 'height': '80vh'}),
             html.Img(src="", id='image-display',
-                     style={
-                        'width': '30%',
-                        'height': '80vh',
-                        'object-fit': 'contain',  # keeps image aspect ratio
-                        'margin-left': '2%'
-                    }),
+                    style={'display': 'none'}),
 
     ], style={
         'display': 'flex',         # horizontal layout
-        'justify-content': 'space-between',
-        'align-items': 'center'
+        'justify-content': 'flex-start',
+        'align-items': 'flex-start'
     })
 ])
 
@@ -124,18 +119,31 @@ def update_scatter(selected_radio):
     
 @callback(
     Output('image-display', 'src'),
+    Output('image-display', 'style'),
     #Output("debug",'children'),
     Input('scatter', 'clickData')
     )
 def show_image(clickData):
     if not clickData:
-        return dash.no_update
+        return dash.no_update, {'display': 'none'}
     if clickData:
         point = clickData["points"][0]
         id_ = point["customdata"][0]
         cluster = point["customdata"][1]
         kl = point["customdata"][2]
-        return os.path.join('assets', f"{id_}.png")
+
+
+        test = os.path.exists(os.path.join('assets', f"{id_}.png"))
+        if test:
+            print("Image path exists")
+            return os.path.join('assets', f"{id_}.png"), {'width': '30%',
+                        'height': '80vh',
+                        'object-fit': 'contain',  # keeps image aspect ratio
+                        'margin-left': '2%'
+                    }
+        else:
+            print("Image path does not exist")
+            return dash.no_update, {'display': 'none'}
     # return str(img_path)
 
 
