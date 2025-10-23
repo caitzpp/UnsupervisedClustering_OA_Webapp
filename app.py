@@ -80,15 +80,37 @@ fig2.update_layout(scene = dict(
     , scene_dragmode = 'turntable'
 )
 
-app.layout = [
-    html.Div(children='My First App with Data, Graph, and Controls'),
-    html.Hr(),
-    dcc.RadioItems(options = ['KL-Scores',  'Noise Points'],
-         value='KL-Scores', id='scatter_radioitem'),
-    html.Img(src="", style={"width": "200px"}, id='image-display'),
-    #dash_table.DataTable(data=df.to_dict('records'), page_size=6),
-    dcc.Graph(figure={}, id='scatter'),
-]
+# app.layout = [
+#     html.Div(children='My First App with Data, Graph, and Controls'),
+#     html.Hr(),
+#     dcc.RadioItems(options = ['KL-Scores',  'Noise Points'],
+#          value='KL-Scores', id='scatter_radioitem'),
+#     html.Img(src="", style={"width": "200px"}, id='image-display'),
+#     #dash_table.DataTable(data=df.to_dict('records'), page_size=6),
+#     dcc.Graph(figure={}, id='scatter', responsive=True
+#               , style={'width': '100%', 'height': '100%'}),
+# ]
+
+app.layout = html.Div([
+    html.Div([
+            dcc.RadioItems(options = ['KL-Scores',  'Noise Points'],
+            value='KL-Scores', id='scatter_radioitem'),
+            dcc.Graph(figure={}, id='scatter', responsive=True
+               , style={'width': '100%', 'height': '80vh'}),
+            html.Img(src="", id='image-display',
+                     style={
+                        'width': '30%',
+                        'height': '80vh',
+                        'object-fit': 'contain',  # keeps image aspect ratio
+                        'margin-left': '2%'
+                    }),
+
+    ], style={
+        'display': 'flex',         # horizontal layout
+        'justify-content': 'space-between',
+        'align-items': 'center'
+    })
+])
 
 @callback(
     Output('scatter', 'figure'),
