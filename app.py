@@ -1,3 +1,4 @@
+import dash
 from dash import Dash, html, dash_table, dcc, callback, Output, Input
 # import pandas as pd
 import plotly.express as px
@@ -84,7 +85,7 @@ app.layout = [
     html.Hr(),
     dcc.RadioItems(options = ['KL-Scores',  'Noise Points'],
          value='KL-Scores', id='scatter_radioitem'),
-    html.Img(src=example_image_path, style={"width": "200px"}),
+    html.Img(src="", style={"width": "200px"}, id='image-display'),
     #dash_table.DataTable(data=df.to_dict('records'), page_size=6),
     dcc.Graph(figure={}, id='scatter'),
 ]
@@ -93,25 +94,28 @@ app.layout = [
     Output('scatter', 'figure'),
     Input('scatter_radioitem', 'value')
 )
-# @callback(Output('other-graph', 'figure), Input('scatter', 'clickData'))
-# def update_other_graph(clickData):
-#     if not clickData:
-#         return dash.no_update
-    
-#     # Get ID from the clicked point
-#     selected_id = clickData['points'][0]['customdata'][0]
-
-#     # Filter data for that ID
-#     df_selected = df[df['id'] == selected_id]
-    
-#     fig = go.Figure()
-#     fig.add_trace(go.Bar(x=df_selected['feature'], y=df_selected['value']))
-#     return fig
 def update_scatter(selected_radio):
     if selected_radio == 'KL-Scores':
         return fig
     else:
         return fig2
+    
+@callback(
+    Output('image-display', 'src'),
+    #Output("debug",'children'),
+    Input('scatter', 'clickData')
+    )
+def show_image(clickData):
+    if not clickData:
+        return dash.no_update
+    if clickData:
+        point = clickData["points"][0]
+        id_ = point["customdata"][0]
+        cluster = point["customdata"][1]
+        kl = point["customdata"][2]
+        return os.path.join('assets', f"{id_}.png")
+    # return str(img_path)
+
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -28,9 +28,9 @@ class BaseTrace:
             name=self.name,
             legend=self.legend,
             customdata=[
-                [v['cluster_label'], v['KL-Score']] for v in self.mapping.values()
+                [id_, v['cluster_label'], v['KL-Score']] for id_, v in self.mapping.items()
             ],
-            hovertemplate='Cluster Label=%{customdata[0]}'
+            hovertemplate='Cluster Label=%{customdata[1]}'
         )
         return trace
     
