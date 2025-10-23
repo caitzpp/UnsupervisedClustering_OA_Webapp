@@ -1,12 +1,14 @@
 import plotly.graph_objects as go
 
 class BaseTrace:
-    def __init__(self, embeddings, mapping, color='lightgray', size=5, showlegend=False):
+    def __init__(self, embeddings, mapping, color='lightgray', size=5, showlegend=False, legend=None, name = None):
         self.embeddings = embeddings
         self.mapping = mapping
         self.color = color
         self.size = size
         self.showlegend = showlegend
+        self.legend = legend
+        self.name = name
 
     def create_trace(self):
         trace = go.Scatter3d(
@@ -23,6 +25,8 @@ class BaseTrace:
                 # opacity=0.8
             ),
             showlegend=self.showlegend,
+            name=self.name,
+            legend=self.legend,
             customdata=[
                 [v['cluster_label'], v['KL-Score']] for v in self.mapping.values()
             ],
