@@ -93,8 +93,10 @@ fig2.update_layout(scene = dict(
 
 app.layout = html.Div([
     html.Div([
-            dcc.RadioItems(options = ['KL-Scores',  'Noise Points'],
+        dcc.RadioItems(options = ['KL-Scores',  'Noise Points'],
             value='KL-Scores', id='scatter_radioitem'),
+    ]),
+    html.Div([
             dcc.Graph(figure={}, id='scatter' #, responsive=True
                , style={'width': '64%', 'height': '80vh'}),
             html.Img(src="", id='image-display',
@@ -135,14 +137,14 @@ def show_image(clickData):
 
         test = os.path.exists(os.path.join('assets', f"{id_}.png"))
         if test:
-            print("Image path exists")
+            # print("Image path exists")
             return os.path.join('assets', f"{id_}.png"), {'width': '30%',
                         'height': '80vh',
                         'object-fit': 'contain',  # keeps image aspect ratio
                         'margin-left': '2%'
                     }
         else:
-            print("Image path does not exist")
+            # print("Image path does not exist")
             return dash.no_update, {'display': 'none'}
     # return str(img_path)
 
