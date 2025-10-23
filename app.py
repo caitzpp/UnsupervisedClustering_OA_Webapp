@@ -11,6 +11,10 @@ from src.load_data import HDBSCAN_DataLoader
 from traces.base import BaseTrace, BaseLegend
 
 PROCESSED_DATA_PATH = config.PROCESSED_DATA_PATH
+IMG_PATH = config.IMG_PATH
+
+example_image="IM0001_1_left.png"
+example_image_path = os.path.join('assets', example_image)
 
 #TODO: import this with args or env
 folder = "2025-10-19_hdbscan"
@@ -80,6 +84,7 @@ app.layout = [
     html.Hr(),
     dcc.RadioItems(options = ['KL-Scores',  'Noise Points'],
          value='KL-Scores', id='scatter_radioitem'),
+    html.Img(src=example_image_path, style={"width": "200px"}),
     #dash_table.DataTable(data=df.to_dict('records'), page_size=6),
     dcc.Graph(figure={}, id='scatter'),
 ]
@@ -88,6 +93,20 @@ app.layout = [
     Output('scatter', 'figure'),
     Input('scatter_radioitem', 'value')
 )
+# @callback(Output('other-graph', 'figure), Input('scatter', 'clickData'))
+# def update_other_graph(clickData):
+#     if not clickData:
+#         return dash.no_update
+    
+#     # Get ID from the clicked point
+#     selected_id = clickData['points'][0]['customdata'][0]
+
+#     # Filter data for that ID
+#     df_selected = df[df['id'] == selected_id]
+    
+#     fig = go.Figure()
+#     fig.add_trace(go.Bar(x=df_selected['feature'], y=df_selected['value']))
+#     return fig
 def update_scatter(selected_radio):
     if selected_radio == 'KL-Scores':
         return fig
