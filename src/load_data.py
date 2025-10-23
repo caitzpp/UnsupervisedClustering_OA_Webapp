@@ -56,7 +56,7 @@ class HDBSCAN_DataLoader(DataLoader):
         
         return df, model_info, embeddings, ids
     
-    def get_mapping(self):
+    def get_mapping(self, columns: list = ['cluster_label', 'KL-Score']):
         if self.df is None:
             df, _, _, ids = self.load_pipeline_data()
         else:
@@ -66,14 +66,14 @@ class HDBSCAN_DataLoader(DataLoader):
         
         base_mapping = {
             i: {
-                "cluster_label": df.loc[df['id'] == i, 'cluster_label'].values[0],
-                "KL-Score": df.loc[df['id'] == i, 'KL-Score'].values[0],
+                col: df.loc[df['id'] == i, col].values[0]
+                for col in columns
             }
             for i in ids
         }
         return base_mapping
     
-    def load_data_by_kl(self):
+    def load_data_by_kl(self, columns: list = ['cluster_label', 'KL-Score']):
         if self.df is None:
             df, _, embeddings, ids = self.load_pipeline_data()
         else:
@@ -95,8 +95,8 @@ class HDBSCAN_DataLoader(DataLoader):
 
             mapping_kl = {
                 i: {
-                    "cluster_label": df_kl.loc[df_kl['id'] == i, 'cluster_label'].values[0],
-                    "KL-Score": df_kl.loc[df_kl['id'] == i, 'KL-Score'].values[0]
+                    col: df_kl.loc[df_kl['id'] == i, col].values[0]
+                    for col in columns
                 }
                 for i in ids_kl
             }

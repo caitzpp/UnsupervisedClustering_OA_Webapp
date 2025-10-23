@@ -8,26 +8,40 @@ import config
 import numpy as np
 import sys
 
-from src.load_data import HDBSCAN_DataLoader
+from src.load_data import HDBSCAN_DataLoader, DataLoader
 from traces.base import BaseTrace, BaseLegend
 
 PROCESSED_DATA_PATH = config.PROCESSED_DATA_PATH
-IMG_PATH = config.IMG_PATH
+RAW_DATA_PATH = config.RAW_DATA_PATH
+# IMG_PATH = config.IMG_PATH
 
-example_image="IM0001_1_left.png"
-example_image_path = os.path.join('assets', example_image)
+# example_image="IM0001_1_left.png"
+# example_image_path = os.path.join('assets', example_image)
 
 #TODO: import this with args or env
 folder = "2025-10-19_hdbscan"
 run = "run27"
 
+mri_file = '2025-09-25_mrismall.csv'
+raw_dataloader = DataLoader(RAW_DATA_PATH)
+mri_df = raw_dataloader.load_csv(mri_file)
+
 data_loader = HDBSCAN_DataLoader(PROCESSED_DATA_PATH, folder, run)
 df, model_info, embeddings, ids = data_loader.load_pipeline_data()
-mapping = data_loader.get_mapping()
+df = df.merge(mri_df[['id', 'mri_bml_yn', 'mri_cart_yn', 'mri_osteo_yn', 'mri_syn_yn',
+               'mri_mnsc_yn', 'mri_lig_yn']], left_on='id', right_on='id', how='left')
+data_loader.df = df 
+trace_columns = ['cluster_label', 'KL-Score', 'mri_bml_yn', 'mri_cart_yn', 'mri_osteo_yn', 'mri_syn_yn',
+               'mri_mnsc_yn', 'mri_lig_yn']
+mapping = data_loader.get_mapping(columns=trace_columns)
+
+trace_mappings = {k: i+1 for i, k in enumerate(trace_columns)}
+
+
 
 klvalues = list(set(df['KL-Score'].values))
 
-mappings_kl, embeddings_kl_d = data_loader.load_data_by_kl()
+mappings_kl, embeddings_kl_d = data_loader.load_data_by_kl(columns=trace_columns)
 mappings_noise, embeddings_noise = data_loader.load_data_by_filter('cluster_label', -1)
 
 pal = px.colors.qualitative.Safe
@@ -48,7 +62,7 @@ for kl in klvalues:
     mappings_kl_temp = mappings_kl[str(int(kl))]
     new_trace = BaseTrace(embeddings_kl, mappings_kl_temp, color=kl_color[kl], showlegend=True
                           , legend="legend", name =f"{kl}")
-    trace_new = new_trace.create_trace()
+    trace_new = new_trace.create_trace(trace_columns=trace_columns, hovertemplate_mappinges=trace_mappings)
     trace_new.legendgroup = f"kl_{kl}"
     fig.add_trace(trace_new)
 fig.update_layout(

@@ -10,7 +10,7 @@ class BaseTrace:
         self.legend = legend
         self.name = name
 
-    def create_trace(self):
+    def create_trace(self, trace_columns = ['cluster_label', 'KL-Score'], hovertemplate_mappinges = {'Cluster Label':1, 'KL-Score':2}):
         trace = go.Scatter3d(
             x=self.embeddings[:, 0],
             y=self.embeddings[:, 1],
@@ -28,9 +28,9 @@ class BaseTrace:
             name=self.name,
             legend=self.legend,
             customdata=[
-                [id_, v['cluster_label'], v['KL-Score']] for id_, v in self.mapping.items()
+                [(id_, v[col]) for col in trace_columns] for id_, v in self.mapping.items()
             ],
-            hovertemplate='Cluster Label=%{customdata[1]}'
+            hovertemplate=('<br>'.join([f"{k}=%{{customdata[{v}]}}" for k, v in hovertemplate_mappinges.items()]) + '<extra></extra>')
         )
         return trace
     
