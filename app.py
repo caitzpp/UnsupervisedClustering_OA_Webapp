@@ -22,26 +22,34 @@ mapping = data_loader.get_mapping()
 
 klvalues = list(set(df['KL-Score'].values))
 
-# mapping = {
-#     i: {
-#         "cluster_label": df.loc[df['id'] == i, 'cluster_label'].values[0],
-#       #  "mri_cart_YN": df.loc[df['id'] == i, 'mri_cart_YN'].values[0],
-#         "KL-Score": df.loc[df['id'] == i, 'KL-Score'].values[0],
-#     }
-#     for i in ids
-# }
+mappings_kl, embeddings_kl_d = data_loader.load_data_by_kl()
+mappings_noise, embeddings_noise = data_loader.load_data_by_filter('cluster_label', -1)
 
-
-
+# def get_palette(klvalues):
+#     pal = px.colors.qualitative.Safe
+#     while len(pal)<max(1, max(len(klvalues))):
+#         pal = pal + pal
+#     return pal
+pal = px.colors.qualitative.Safe
 # Initialize the app
 app = Dash(__name__)
 
 fig = go.Figure()
 traces = []
 base = BaseTrace(embeddings, mapping)
-# new_trace = BaseTrace(embeddings_kl, mapping_kl, color='lightblue', showlegend=True)
 fig.add_trace(base.create_trace())
-# fig.add_trace(new_trace.create_trace())
+
+# print(mappings_kl['1'])
+# sys.exit()
+kl_color = {kl: pal[i] for i, kl in enumerate(klvalues)}
+for kl in klvalues:
+    embeddings_kl = embeddings_kl_d[str(int(kl))]
+    mappings_kl_temp = mappings_kl[str(int(kl))]
+    new_trace = BaseTrace(embeddings_kl, mappings_kl_temp, color=kl_color[kl], showlegend=True)
+    fig.add_trace(new_trace.create_trace())
+
+noise_trace = BaseTrace(embeddings_noise, mappings_noise, color='black', showlegend=True)
+fig.add_trace(noise_trace.create_trace())
 
 app.layout = [
     html.Div(children='My First App with Data, Graph, and Controls'),

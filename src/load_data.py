@@ -84,13 +84,14 @@ class HDBSCAN_DataLoader(DataLoader):
         kl_values = df['KL-Score'].unique()
         
         result = {}
+        embeddings_kl_d = {}
         for kl in kl_values:
             df_kl = df[df['KL-Score'] == kl]
             #embeddings_kl = embeddings[df_kl.index, :]
             ids_kl = df_kl['id'].values
 
             #get index in ids for ids in ids_kl
-            idx_kl = [np.where(ids == id_)[0][0] for id_ in ids_kl]
+            idx_kl = [np.where(ids == np.array(id_))[0][0] for id_ in ids_kl]
 
             mapping_kl = {
                 i: {
@@ -101,6 +102,33 @@ class HDBSCAN_DataLoader(DataLoader):
             }
 
             embeddings_kl = embeddings[idx_kl, :]
-            result[kl] = mapping_kl
+            embeddings_kl_d[str(int(kl))] = embeddings_kl
+            result[str(int(kl))] = mapping_kl
 
-        return result, embeddings_kl
+        return result, embeddings_kl_d
+    
+    def load_data_by_filter(self, filter_column: str, filter_value):
+        if self.df is None:
+            df, _, embeddings, ids = self.load_pipeline_data()
+        else:
+            df = self.df
+            embeddings = self.embeddings
+            ids = self.ids
+        
+        df_filt = df[df[filter_column] == filter_value]
+        ids_filt = df_filt['id'].values
+
+        #get index in ids for ids in ids_filt
+        idx_filt = [np.where(ids == np.array(id_))[0][0] for id_ in ids_filt]
+
+        mapping_filt = {
+            i: {
+                "cluster_label": df_filt.loc[df_filt['id'] == i, 'cluster_label'].values[0],
+                "KL-Score": df_filt.loc[df_filt['id'] == i, 'KL-Score'].values[0]
+            }
+            for i in ids_filt
+        }
+
+        embeddings_filt = embeddings[idx_filt, :]
+
+        return mapping_filt, embeddings_filt
