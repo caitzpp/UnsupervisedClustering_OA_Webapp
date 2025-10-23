@@ -5,6 +5,7 @@ import plotly.graph_objects as go
 import os
 import config
 import numpy as np
+import sys
 
 from src.load_data import HDBSCAN_DataLoader
 from traces.base import BaseTrace
@@ -17,16 +18,20 @@ run = "run27"
 
 data_loader = HDBSCAN_DataLoader(PROCESSED_DATA_PATH, folder, run)
 df, model_info, embeddings, ids = data_loader.load_pipeline_data()
+mapping = data_loader.get_mapping()
+
+klvalues = list(set(df['KL-Score'].values))
+
+# mapping = {
+#     i: {
+#         "cluster_label": df.loc[df['id'] == i, 'cluster_label'].values[0],
+#       #  "mri_cart_YN": df.loc[df['id'] == i, 'mri_cart_YN'].values[0],
+#         "KL-Score": df.loc[df['id'] == i, 'KL-Score'].values[0],
+#     }
+#     for i in ids
+# }
 
 
-mapping = {
-    i: {
-        "cluster_label": df.loc[df['id'] == i, 'cluster_label'].values[0],
-      #  "mri_cart_YN": df.loc[df['id'] == i, 'mri_cart_YN'].values[0],
-        "KL-Score": df.loc[df['id'] == i, 'KL-Score'].values[0],
-    }
-    for i in ids
-}
 
 # Initialize the app
 app = Dash(__name__)
@@ -34,7 +39,9 @@ app = Dash(__name__)
 fig = go.Figure()
 traces = []
 base = BaseTrace(embeddings, mapping)
+# new_trace = BaseTrace(embeddings_kl, mapping_kl, color='lightblue', showlegend=True)
 fig.add_trace(base.create_trace())
+# fig.add_trace(new_trace.create_trace())
 
 app.layout = [
     html.Div(children='My First App with Data, Graph, and Controls'),

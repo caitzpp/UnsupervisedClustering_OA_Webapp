@@ -35,6 +35,9 @@ class HDBSCAN_DataLoader(DataLoader):
         super().__init__(file_path)
         self.run = run
         self.modality = modality
+        self.df = None
+        self.embeddings = None
+        self.ids = None
         logger.info(f"HDBSCAN_DataLoader initialized for run: {self.run} and modality: {self.modality}")
 
     def load_pipeline_data(self):
@@ -46,5 +49,58 @@ class HDBSCAN_DataLoader(DataLoader):
         model_info = self.load_json(json_filename)
         ids = model_info['files']['ids']
         embeddings = self.load_numpy(embeddings_filename)
+
+        self.df = df
+        self.embeddings = embeddings
+        self.ids = ids
         
         return df, model_info, embeddings, ids
+    
+    def get_mapping(self):
+        if self.df is None:
+            df, _, _, ids = self.load_pipeline_data()
+        else:
+            df = self.df
+            # embeddings = self.embeddings
+            ids = self.ids
+        
+        base_mapping = {
+            i: {
+                "cluster_label": df.loc[df['id'] == i, 'cluster_label'].values[0],
+                "KL-Score": df.loc[df['id'] == i, 'KL-Score'].values[0],
+            }
+            for i in ids
+        }
+        return base_mapping
+    
+    def load_data_by_kl(self):
+        if self.df is None:
+            df, _, embeddings, ids = self.load_pipeline_data()
+        else:
+            df = self.df
+            embeddings = self.embeddings
+            ids = self.ids
+        
+        kl_values = df['KL-Score'].unique()
+        
+        result = {}
+        for kl in kl_values:
+            df_kl = df[df['KL-Score'] == kl]
+            #embeddings_kl = embeddings[df_kl.index, :]
+            ids_kl = df_kl['id'].values
+
+            #get index in ids for ids in ids_kl
+            idx_kl = [np.where(ids == id_)[0][0] for id_ in ids_kl]
+
+            mapping_kl = {
+                i: {
+                    "cluster_label": df_kl.loc[df_kl['id'] == i, 'cluster_label'].values[0],
+                    "KL-Score": df_kl.loc[df_kl['id'] == i, 'KL-Score'].values[0]
+                }
+                for i in ids_kl
+            }
+
+            embeddings_kl = embeddings[idx_kl, :]
+            result[kl] = mapping_kl
+
+        return result, embeddings_kl
