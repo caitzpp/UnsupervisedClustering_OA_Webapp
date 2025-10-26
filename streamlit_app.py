@@ -18,10 +18,10 @@ from pages import plotly_page, cluster_page, home, about
 #     #orientation = "horizontal",
 # )
     
-home_page = st.Page(home.main, title = "Home", icon=":material/home:")
-graph_page = st.Page(plotly_page.main, title = "Embedding Explorer")
-as_page = st.Page(cluster_page.main, title = "Cluster Gallery")
-about_page = st.Page(about.main, title = "About")
+home_page = st.Page(home.show_home, title = "Home", icon=":material/home:")
+graph_page = st.Page(plotly_page.show_graph, title = "Embedding Explorer")
+as_page = st.Page(cluster_page.show_clusterpage, title = "Cluster Gallery")
+about_page = st.Page(about.show_about, title = "About")
 
 
 pg = st.navigation([home_page, graph_page, as_page, about_page])

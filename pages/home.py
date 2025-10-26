@@ -1,6 +1,6 @@
 import streamlit as st
 
-def main():
+def show_home():
     st.header('Home')
 
     with open("content/home.md", "r", encoding="utf-8") as f:
