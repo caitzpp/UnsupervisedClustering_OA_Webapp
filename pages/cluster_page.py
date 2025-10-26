@@ -44,13 +44,16 @@ def show_clusterpage():
 
     if "sort_ascending" not in st.session_state:
         st.session_state.sort_ascending = False
+  
     clicked = st.button(f"Sort")
 
     if clicked:
         st.session_state.sort_ascending = not st.session_state.sort_ascending
 
     button_icon = "⬆️" if st.session_state.sort_ascending else "⬇️"
+ 
     st.write(f"Currently sorting {button_icon}")
+    
     df_cluster = df_cluster.sort_values(by='mean', ascending=st.session_state.sort_ascending)
             
     st.markdown(f"### Showing {len(df_cluster[:max_n])} images for Cluster {selected_cluster}")
