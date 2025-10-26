@@ -1,3 +1,4 @@
+from loguru import logger
 import streamlit as st
 import config
 import pandas as pd
@@ -42,15 +43,14 @@ def show_clusterpage():
     df_cluster = df[df['cluster_label'] == selected_cluster]
 
     if "sort_ascending" not in st.session_state:
-        st.session_state["sort_ascending"] = False
-    
-    arrow = "⬇️" if st.session_state.sort_ascending==False else "⬆️"
+        st.session_state.sort_ascending = False
+    clicked = st.button(f"Sort")
 
-    if st.button(f'Sort {arrow}'):
+    if clicked:
         st.session_state.sort_ascending = not st.session_state.sort_ascending
-    
-    # arrow = "⬆️" if st.session_state.sort_ascending==False else "⬇️"
 
+    button_icon = "⬆️" if st.session_state.sort_ascending else "⬇️"
+    st.write(f"Currently sorting {button_icon}")
     df_cluster = df_cluster.sort_values(by='mean', ascending=st.session_state.sort_ascending)
             
     st.markdown(f"### Showing {len(df_cluster[:max_n])} images for Cluster {selected_cluster}")
