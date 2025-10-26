@@ -71,9 +71,14 @@ fig.update_layout(
     scene = dict(
         xaxis_title='UMAP 1',
         yaxis_title='UMAP 2',
-        zaxis_title='UMAP 3'
+        zaxis_title='UMAP 3',
+        camera=dict(
+            eye=dict(x=1.8, y=1.8, z=1.8) 
+        )
     )
     , scene_dragmode = 'turntable'
+    # , width = 1000
+    # , height=800
 )
 
 fig2 = go.Figure()
@@ -106,9 +111,11 @@ app.layout = html.Div([
                     style={'display': 'none'}),
 
     ], style={
-        'display': 'flex',        
-        'justify-content': 'flex-start',
-        'align-items': 'flex-start'
+        'display': 'flex',     
+        'flexDirection': 'row',  
+        'justify-content': 'center',
+        'align-items': 'center',
+        'gap': '10px'
     })
 ])
 
@@ -139,16 +146,17 @@ def show_image(clickData):
 
         test = os.path.exists(os.path.join('assets', f"{id_}.png"))
         if test:
-            return os.path.join('assets', f"{id_}.png"), {'width': '30%',
-                        'height': '80vh',
+            return os.path.join('assets', f"{id_}.png"), {'width': '25%',
+                        'height': 'auto',
                         'object-fit': 'contain', 
-                        'margin-left': '2%'
+                        'margin-left': '2%',
+                        'display': 'block'
                     }
         else:
             return dash.no_update, {'display': 'none'}
 
 
 if __name__ == '__main__':
-    app.run(debug=False)
+    app.run(debug=True)
 
 
