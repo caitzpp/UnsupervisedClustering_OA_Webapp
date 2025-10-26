@@ -34,7 +34,6 @@ def show_clusterpage():
         st.error(f"Dataframe is missing expected columns: {expected_cols - set(df.columns)}")
         return
     
-    # Dropdown
     cluster_list = sorted(df['cluster_label'].unique().tolist())
     selected_cluster = st.selectbox('Select Cluster Label', cluster_list)
 
@@ -42,8 +41,18 @@ def show_clusterpage():
 
     df_cluster = df[df['cluster_label'] == selected_cluster]
 
-    df_cluster = df_cluster.sort_values(by='mean', ascending=False)
+    if "sort_ascending" not in st.session_state:
+        st.session_state["sort_ascending"] = False
+    
+    arrow = "⬇️" if st.session_state.sort_ascending==False else "⬆️"
 
+    if st.button(f'Sort {arrow}'):
+        st.session_state.sort_ascending = not st.session_state.sort_ascending
+    
+    # arrow = "⬆️" if st.session_state.sort_ascending==False else "⬇️"
+
+    df_cluster = df_cluster.sort_values(by='mean', ascending=st.session_state.sort_ascending)
+            
     st.markdown(f"### Showing {len(df_cluster[:max_n])} images for Cluster {selected_cluster}")
 
     cols = st.columns(5)
