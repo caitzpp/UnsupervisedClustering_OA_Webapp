@@ -3,7 +3,7 @@ import config
 import pandas as pd
 import os
 
-from src.load_data import DataLoader, HDBSCAN_DataLoader
+from src.load_data import DataLoader, HDBSCAN_DataLoader, ExtendedDataLoader
 
 RAW_DATA_PATH = config.RAW_DATA_PATH
 PROCESSED_DATA_PATH = config.PROCESSED_DATA_PATH
@@ -22,31 +22,41 @@ trace_columns = ['cluster_label', 'KL-Score', 'mri_bml_yn', 'mri_cart_yn', 'mri_
 def show_clusterpage():
     st.header('Cluster Gallery')
 
-    raw_dataloader = DataLoader(RAW_DATA_PATH)
-    mri_df = raw_dataloader.load_csv(mri_file)
-
-    data_loader = HDBSCAN_DataLoader(PROCESSED_DATA_PATH, folder, run)
+    data_loader = ExtendedDataLoader(RAW_DATA_PATH, PROCESSED_DATA_PATH, folder, run)
     df, model_info, embeddings, ids = data_loader.load_pipeline_data()
-    df = df.merge(mri_df[['id', 'mri_bml_yn', 'mri_cart_yn', 'mri_osteo_yn', 'mri_syn_yn',
-                'mri_mnsc_yn', 'mri_lig_yn']], left_on='id', right_on='id', how='left')
-    data_loader.df = df 
+    data_loader.merge_mri_data(mri_file)
+    data_loader.load_anomaly_scores(as_folder, as_file)
+    data_loader.merge_anomaly_scores()
 
-    as_dataloader = DataLoader(os.path.join(PROCESSED_DATA_PATH, as_folder))
-    as_df = as_dataloader.load_csv(as_file)
-    print(as_df.columns)
+    expected_cols = {'cluster_label', 'id', 'mean'}
+    if not expected_cols.issubset(set(df.columns)):
+        st.error(f"Dataframe is missing expected columns: {expected_cols - set(df.columns)}")
+        return
     
-    # df = df.merge()
+    # Dropdown
+    cluster_list = sorted(df['cluster_label'].unique().tolist())
+    selected_cluster = st.selectbox('Select Cluster Label', cluster_list)
 
-    # expected_cols = {'cluster_label', 'id'}
-    # if not expected_cols.issubset(set(df.columns)):
-    #     st.error(f"Dataframe is missing expected columns: {expected_cols - set(df.columns)}")
-    #     return
-    
-    # # Dropdown
-    # cluster_list = sorted(df['cluster_label'].unique().tolist())
-    # selected_cluster = st.selectbox('Select Cluster Label', cluster_list)
+    max_n = st.slider('Number of images to display', min_value=1, max_value=100, value=20)
 
-    # max_n = st.slider('Number of images to display', min_value=1, max_value=100, value=20)
+    df_cluster = df[df['cluster_label'] == selected_cluster]
+
+    df_cluster = df_cluster.sort_values(by='mean', ascending=False)
+
+    st.markdown(f"### Showing {len(df_cluster[:max_n])} images for Cluster {selected_cluster}")
+
+    cols = st.columns(5)
+
+    for i, (_, row) in enumerate(df_cluster.head(max_n).iterrows()):
+        img_path = os.path.join(config.IMG_PATH, row['id'] + '.png')
+        if os.path.exists(img_path):
+            print(f"ImgPath exists {img_path}")
+            with cols[i % 5]:
+                st.image(str(img_path), use_container_width=True)
+        else:
+            with cols[i % 5]:
+                st.caption(f"Missing: {img_path.name}")
+
 
 if __name__ == "__main__":
     show_clusterpage()

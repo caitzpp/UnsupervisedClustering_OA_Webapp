@@ -32,6 +32,7 @@ class DataLoader:
 class HDBSCAN_DataLoader(DataLoader):
     def __init__(self, base_path: str, folder: str, run: str, modality: str = 'pipeline'):
         file_path = os.path.join(base_path, folder, modality, run)
+        self.base_path = base_path
         super().__init__(file_path)
         self.run = run
         self.modality = modality
