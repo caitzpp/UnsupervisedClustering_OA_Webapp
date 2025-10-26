@@ -1,67 +1,46 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import snowflake.connector
 import streamlit_option_menu
 from streamlit_option_menu import option_menu
+from streamlit.components.v1 import iframe
+import config
 
 with st.sidebar:
     selected = option_menu(
     menu_title = "Main Menu",
-    options = ["Home","Warehouse","Query Optimization and Processing","Storage","Contact Us"],
-    icons = ["house","gear","activity","snowflake","envelope"],
+    options = ["Home","Embedding Explorer", "Cluster Gallery", "About"],
+    icons = ["house","microscope","art", "info-circle"],
     menu_icon = "cast",
     default_index = 0,
     #orientation = "horizontal",
 )
 if selected == "Home":
-    st.header('Snowflake Healthcare App')
-    # Create a row layout
-    c1, c2= st.columns(2)
-    c3, c4= st.columns(2)
+    st.header('xxx')
 
-    with st.container():
-        c1.write("c1")
-        c2.write("c2")
+    with open("content/home.md", "r", encoding="utf-8") as f:
+        markdown_text = f.read()
+    st.markdown(markdown_text, unsafe_allow_html=True)
+    # Load markdown file
+    # with open("README.md", "r", encoding="utf-8") as f:
+    #     markdown_text = f.read()
 
-    with st.container():
-        c3.write("c3")
-        c4.write("c4")
-
-    with c1:
-        chart_data = pd.DataFrame(np.random.randn(20, 3),columns=['a', 'b', 'c'])
-        st.area_chart(chart_data)
-           
-    with c2:
-        chart_data = pd.DataFrame(np.random.randn(20, 3),columns=["a", "b", "c"])
-        st.bar_chart(chart_data)
-
-    with c3:
-        chart_data = pd.DataFrame(np.random.randn(20, 3),columns=['a', 'b', 'c'])
-        st.line_chart(chart_data)
-
-    with c4:
-        chart_data = pd.DataFrame(np.random.randn(20, 3),columns=['a', 'b', 'c'])
-        st.line_chart(chart_data)
+    # # Display it in the app
+    # st.markdown(markdown_text, unsafe_allow_html=True)
+   
         
     
-if selected == "Warehouse":
-    st.subheader(f"**You Have selected {selected}**")
-    my_cnx = snowflake.connector.connect(**st.secrets["snowflake"])
-    my_cur = my_cnx.cursor()
-    # run a snowflake query and put it all in a var called my_catalog
-    my_cur.execute("select * from SWEATSUITS")
-    my_catalog = my_cur.fetchall()
-    st.dataframe(my_catalog)
-    q1 = st.text_input('Write your query','')
-    st.button('Run Query')
-    if not q1:
-      st.error('Please write a query')
-    else:
-      my_cur.execute(q1)
-      my_catalog = my_cur.fetchall()
-      st.dataframe(my_catalog)
+if selected == "Embedding Explorer":
+    st.header('Embedding Explorer')
+    iframe(config.PLOTLY_URL, width=700, height=600)
+  
 
     
-if selected == "Contact":
-    st.subheader(f"**You Have selected {selected}**")
+# if selected == "Cluster Gallery":
+
+if selected == "About":
+    st.header('About')
+    with open("content/about.md", "r", encoding="utf-8") as f:
+        markdown_text = f.read()
+    st.markdown(markdown_text, unsafe_allow_html=True)
+ 
