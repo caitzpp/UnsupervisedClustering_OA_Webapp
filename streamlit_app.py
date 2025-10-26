@@ -4,10 +4,22 @@ import numpy as np
 import streamlit_option_menu
 from streamlit_option_menu import option_menu
 from streamlit.components.v1 import iframe
+import streamlit_authenticator as stauth
+import yaml
+from yaml.loader import SafeLoader
 import config
 import os
 
 from pages import app_page #, login
+
+with open('login_info.yaml') as file:
+    login_info = yaml.load(file, Loader=SafeLoader)
+authenticator = stauth.Authenticate(
+    login_info['credentials'],
+    login_info['cookie']['name'],
+    login_info['cookie']['key'],
+    login_info['cookie']['expiry_days']
+)
 
 # st.set_page_config(layout="wide", initial_sidebar_state = "collapsed", menu_items=None) #page_title="Cluster Dashboard", page_icon=":material/dashboard:", 
 
@@ -44,7 +56,7 @@ from pages import app_page #, login
 
 if __name__ == "__main__":
     if not st.user.is_logged_in:
-        st.login()
+        authenticator.login()
 
         st.stop()
     pg = app_page.run_app()

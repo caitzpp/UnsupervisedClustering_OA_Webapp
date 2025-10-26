@@ -1,0 +1,13 @@
+cookie:
+  expiry_days: 30
+  key: anystring
+  name: anystring
+credentials:
+  usernames:
+    example:
+      email: example@example.com
+      failed_login_attempts: 0 # Will be managed automatically
+      first_name: example
+      last_name: example
+      logged_in: False # Will be managed automatically
+      password: mypassword # Will be hashed automatically
