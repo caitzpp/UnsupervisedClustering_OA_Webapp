@@ -6,6 +6,11 @@ from streamlit_option_menu import option_menu
 from streamlit.components.v1 import iframe
 import config
 
+from pages import plotly_page, cluster_page, home, about
+
+st.set_page_config(page_title="Cluster Dashboard", page_icon=":material/dashboard:", layout="wide")
+
+
 with st.sidebar:
     selected = option_menu(
     menu_title = "Main Menu",
@@ -15,6 +20,12 @@ with st.sidebar:
     default_index = 0,
     #orientation = "horizontal",
 )
+    
+home_page = st.Page(home, title = "Home")
+plotly_page = st.Page(plotly_page, title = "Embedding Explorer")
+# cluster_page = st.Page(cluster_page, title = "Cluster Gallery")
+about_page = st.Page(about, title = "About")
+
 if selected == "Home":
     st.header('xxx')
 
