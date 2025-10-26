@@ -153,3 +153,57 @@ class HDBSCAN_DataLoader(DataLoader):
         }
 
         return mapping_filt
+
+class ExtendedDataLoader(HDBSCAN_DataLoader):
+    def __init__(self, raw_data_path: str, base_path: str, folder: str, run: str, modality: str = 'pipeline'):
+        super().__init__(base_path, folder, run, modality)
+        self.raw_data_path = raw_data_path
+        self.as_df =None
+        logger.info("ExtendedDataLoader initialized")
+
+    def merge_mri_data(self, mri_filename: str):
+        if self.df is None:
+            raise ValueError("Call load_pipeline_data() before merging MRI data.")
+        
+        mri_path = os.path.join(self.raw_data_path, mri_filename)
+        mri_df = pd.read_csv(mri_path)
+
+        merge_cols = [
+            'mri_bml_yn', 'mri_cart_yn', 'mri_osteo_yn',
+            'mri_syn_yn', 'mri_mnsc_yn', 'mri_lig_yn'
+        ]
+
+        self.df = self.df.merge(
+            mri_df[['id'] + merge_cols],
+            on='id',
+            how='left',
+            validate='one_to_one'
+        )
+
+        return self.df
+    
+    def clean_id(self, id_column: str = 'id', split_char: str = '.'):
+        self.as_df[id_column] = self.as_df[id_column].apply(lambda x: os.path.basename(x).split(split_char)[0])
+        logger.info(f"Cleaned IDs in column: {id_column}")
+        return self.as_df
+    
+    def load_anomaly_scores(self, as_folder: str, as_file: str):
+        as_path = os.path.join(self.base_path, as_folder)
+        as_dataloader = DataLoader(as_path)
+        self.as_df = as_dataloader.load_csv(as_file)
+        self.as_df = self.clean_id(id_column='id', split_char='.')
+        logger.info(f"Anomaly scores loaded from: {as_file}")
+        return self.as_df
+    
+    def merge_anomaly_scores(self):
+        if self.as_df is None:
+            raise ValueError("Call load_anomaly_scores() before merging anomaly scores.")
+        
+        self.df = self.df.merge(
+            self.as_df,
+            on='id',
+            how='left',
+            validate='one_to_one'
+        )
+        logger.info("Merged anomaly scores into main dataframe")
+        return self.df
