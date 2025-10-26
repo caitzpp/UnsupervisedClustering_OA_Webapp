@@ -27,6 +27,7 @@ def show_clusterpage():
     data_loader.merge_mri_data(mri_file)
     data_loader.load_anomaly_scores(as_folder, as_file)
     data_loader.merge_anomaly_scores()
+    df = data_loader.df
 
     expected_cols = {'cluster_label', 'id', 'mean'}
     if not expected_cols.issubset(set(df.columns)):
