@@ -22,6 +22,7 @@ trace_columns = ['cluster_label', 'KL-Score', 'mri_bml_yn', 'mri_cart_yn', 'mri_
 
 def show_clusterpage():
     st.header('Cluster Gallery')
+    st.markdown(f"[Link to Feedback Form]({config.GOOGLE_FORM_URL})")
 
     data_loader = ExtendedDataLoader(RAW_DATA_PATH, PROCESSED_DATA_PATH, folder, run)
     df, model_info, embeddings, ids = data_loader.load_pipeline_data()

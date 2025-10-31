@@ -7,6 +7,13 @@ from yaml.loader import SafeLoader
 
 
 def login_page():
+    # hide_sidebar_style = """
+    #     <style>
+    #     [data-testid="stSidebar"] {visibility: hidden; width: 0px;}
+    #     </style>
+    # """
+    # st.markdown(hide_sidebar_style, unsafe_allow_html=True)
+
     with open('login_info.yaml') as file:
         login_info = yaml.load(file, Loader=SafeLoader)
 
