@@ -8,8 +8,8 @@ from src.load_data import DataLoader, HDBSCAN_DataLoader, ExtendedDataLoader
 
 RAW_DATA_PATH = config.RAW_DATA_PATH
 PROCESSED_DATA_PATH = config.PROCESSED_DATA_PATH
-folder = "2025-10-19_hdbscan"
-run = "run27"
+folder = config.CLUSTER_FOLDER
+run = config.CLUSTER_RUN
 
 #TODO: get anomaly score
 #data/processed/outputs/dfs/ss/mod_smallimg3_ss_aggregated_scores.csv
