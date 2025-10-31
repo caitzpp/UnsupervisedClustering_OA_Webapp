@@ -19,8 +19,8 @@ RAW_DATA_PATH = config.RAW_DATA_PATH
 # example_image_path = os.path.join('assets', example_image)
 
 #TODO: import this with args or env
-folder = "2025-10-19_hdbscan"
-run = "run27"
+folder = config.CLUSTER_FOLDER
+run = config.CLUSTER_RUN
 
 mri_file = '2025-09-25_mrismall.csv'
 raw_dataloader = DataLoader(RAW_DATA_PATH)
@@ -40,9 +40,19 @@ trace_mappings = {k: i+1 for i, k in enumerate(trace_columns)}
 
 
 klvalues = list(set(df['KL-Score'].values))
+clustervalues = list(set(df['cluster_label'].values))
+clustervalues2 = clustervalues.copy()
+try:
+    clustervalues2.remove(-1)
+except ValueError:
+    pass
+clustervalues2 = sorted(clustervalues2)
 
 mappings_kl, embeddings_kl_d = data_loader.load_data_by_kl(columns=trace_columns)
 mappings_noise, embeddings_noise = data_loader.load_data_by_filter('cluster_label', -1)
+mappings_cluster, embeddings_cluster_d = data_loader.load_data_by_cluster(columns=trace_columns)
+
+# mappings_clusters, embeddings_clusters = data_loader.load_multiple_mappings('cluster_label')
 
 pal = px.colors.qualitative.Safe
 
@@ -81,6 +91,39 @@ fig.update_layout(
     # , height=800
 )
 
+fig3 = go.Figure()
+cluster_traces = []
+base3 = BaseTrace(embeddings, mapping)
+fig3.add_trace(base3.create_trace())
+
+legend_cluster = BaseLegend(title='Cluster Label', y=0.5)
+fig3.update_layout(legend=legend_cluster.create_legend())
+
+cluster_color = {cl: pal[i] for i, cl in enumerate(clustervalues2)}
+for cl in sorted(clustervalues2):
+    embeddings_cluster = embeddings_cluster_d[str(int(cl))]
+    mappings_cluster_temp = mappings_cluster[str(int(cl))]
+    new_cluster_trace = BaseTrace(embeddings_cluster, mappings_cluster_temp, color=cluster_color[cl], showlegend=True
+                          , legend="legend", name =f"Cluster {cl}")
+    trace_cluster_new = new_cluster_trace.create_trace(trace_columns=trace_columns, hovertemplate_mappinges=trace_mappings)
+    trace_cluster_new.legendgroup = f"cluster_{cl}"
+    fig3.add_trace(trace_cluster_new)
+fig3.update_layout(
+    legend_groupclick = "toggleitem",
+    legend_itemclick = "toggleothers",
+    scene = dict(
+        xaxis_title='UMAP 1',
+        yaxis_title='UMAP 2',
+        zaxis_title='UMAP 3',
+        camera=dict(
+            eye=dict(x=1.8, y=1.8, z=1.8) 
+        )
+    )
+    , scene_dragmode = 'turntable'
+    # , width = 1000
+    # , height=800
+)
+
 fig2 = go.Figure()
 legend_noise = BaseLegend(title='Noise Points', y=0.9)
 fig2.update_layout(legend2=legend_noise.create_legend())
@@ -98,10 +141,11 @@ fig2.update_layout(scene = dict(
     , scene_dragmode = 'turntable'
 )
 
+
 app.layout = html.Div([
     html.Div([
-        dcc.Dropdown(options = ['KL-Scores',  'Noise Points'],
-            value='KL-Scores', id='scatter_radioitem', clearable=False
+        dcc.Dropdown(options = ['Clusters', 'KL-Scores',  'Noise Points'],
+            value='Clusters', id='scatter_radioitem', clearable=False
             ,style={'width': '200px', 'marginBottom': '10px'}),
     ]),
     html.Div([
@@ -126,6 +170,8 @@ app.layout = html.Div([
 def update_scatter(selected_radio):
     if selected_radio == 'KL-Scores':
         return fig
+    elif selected_radio == 'Clusters':
+        return fig3
     else:
         return fig2
     

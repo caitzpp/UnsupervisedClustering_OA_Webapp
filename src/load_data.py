@@ -108,6 +108,46 @@ class HDBSCAN_DataLoader(DataLoader):
 
         return result, embeddings_kl_d
     
+    def load_data_by_cluster(self, columns: list = ['cluster_label', 'KL-Score']):
+        if self.df is None:
+            df, _, embeddings, ids = self.load_pipeline_data()
+        else:
+            df = self.df
+            embeddings = self.embeddings
+            ids = self.ids
+
+        cluster_values = list(df['cluster_label'].unique())
+
+        try:
+            cluster_values.remove(-1)
+        except ValueError:
+            print("No noise cluster to remove")
+            pass
+
+        result = {}
+        embeddings_cluster_d = {}
+        for cluster in cluster_values:
+            df_cluster = df[df['cluster_label'] == cluster]
+            #embeddings_kl = embeddings[df_kl.index, :]
+            ids_cluster = df_cluster['id'].values
+
+            #get index in ids for ids in ids_cluster
+            idx_cluster = [np.where(ids == np.array(id_))[0][0] for id_ in ids_cluster]
+
+            mapping_cluster = {
+                i: {
+                    col: df_cluster.loc[df_cluster['id'] == i, col].values[0]
+                    for col in columns
+                }
+                for i in ids_cluster
+            }
+
+            embeddings_cluster = embeddings[idx_cluster, :]
+            embeddings_cluster_d[str(int(cluster))] = embeddings_cluster
+            result[str(int(cluster))] = mapping_cluster
+
+        return result, embeddings_cluster_d
+
     def load_data_by_filter(self, filter_column: str, filter_value):
         if self.df is None:
             df, _, embeddings, ids = self.load_pipeline_data()
@@ -134,6 +174,43 @@ class HDBSCAN_DataLoader(DataLoader):
 
         return mapping_filt, embeddings_filt
     
+    def load_multiple_mappings(self, filter_column: str):
+        if self.df is None:
+            df, _, embeddings, ids = self.load_pipeline_data()
+        else:
+            df = self.df
+            embeddings = self.embeddings
+            ids = self.ids
+        
+        filter_values = df[filter_column].unique()
+        filter_values = filter_values.sort()
+
+        try:
+            filter_values.remove(-1)
+        except ValueError:
+            pass
+        
+        result = {}
+        idx_result = {}
+        for val in filter_values:
+            df_filt = df[df[filter_column] == val]
+            ids_filt = df_filt['id'].values
+
+            idx_filt = [np.where(ids == np.array(id_))[0][0] for id_ in ids_filt]
+
+            mapping_filt = {
+                i: {
+                    "cluster_label": df_filt.loc[df_filt['id'] == i, 'cluster_label'].values[0],
+                    "KL-Score": df_filt.loc[df_filt['id'] == i, 'KL-Score'].values[0]
+                }
+                for i in ids_filt
+            }
+
+            result[str(val)] = mapping_filt
+            idx_result[str(val)] = idx_filt
+
+        return result, idx_result
+
     def load_data_by_binaryfilter(self, filter_column: str, filter_values: int):
         if self.df is None:
             df, _, embeddings, ids = self.load_pipeline_data()
