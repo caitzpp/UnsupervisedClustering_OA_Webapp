@@ -48,6 +48,5 @@ if __name__ == "__main__":
         st.stop()
     else:
         show_sidebar()
-    
     pg = app_page.run_app()
     pg.run()
