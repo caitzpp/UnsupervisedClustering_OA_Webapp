@@ -5,6 +5,8 @@ from streamlit.components.v1 import iframe, html
 def show_graph():
     st.header('Embedding Explorer')
     # st.markdown(f"[Link to Feedback Form]({config.GOOGLE_FORM_URL})")
+    st.markdown("Filler: scroll down for feedback form")
+    iframe(config.PLOTLY_URL, width=1400, height=1200)
 
     html("""
         <script async src="https://tally.so/widgets/embed.js"></script>
@@ -27,5 +29,6 @@ def show_graph():
         >
         Open Feedback Form
         </button>
-        """, height=60)
-    iframe(config.PLOTLY_URL, width=1400, height=1200)
+        """, height=1000, 
+       # scrolling=True
+        )

@@ -1,5 +1,6 @@
 from loguru import logger
 import streamlit as st
+from streamlit.components.v1 import html
 import config
 import pandas as pd
 import os
@@ -17,8 +18,10 @@ as_file = "mod_smallimg3_ss_aggregated_scores.csv"
 as_folder = os.path.join("outputs", "dfs", "ss")
 
 mri_file = '2025-09-25_mrismall.csv'
-trace_columns = ['cluster_label', 'KL-Score', 'mri_bml_yn', 'mri_cart_yn', 'mri_osteo_yn', 'mri_syn_yn',
-               'mri_mnsc_yn', 'mri_lig_yn']
+trace_columns = ['cluster_label', 'KL-Score', 
+            #      'mri_bml_yn', 'mri_cart_yn', 'mri_osteo_yn', 'mri_syn_yn',
+            #    'mri_mnsc_yn', 'mri_lig_yn'
+               ]
 
 def show_clusterpage():
     st.header('Cluster Gallery')
@@ -70,6 +73,27 @@ def show_clusterpage():
         else:
             with cols[i % 5]:
                 st.caption(f"Missing: {img_path.name}")
+
+    html("""
+    <script async src="https://tally.so/widgets/embed.js"></script>
+     <button 
+        data-tally-open="XxlEkL" 
+        data-tally-width="1000" 
+        data-tally-emoji-text="👋" 
+        data-tally-emoji-animation="wave"
+        style="
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        "
+        >
+        Open Feedback Form
+        </button>
+    """, height = 1000)
 
 
 if __name__ == "__main__":
