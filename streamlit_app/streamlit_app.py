@@ -11,6 +11,7 @@ import config
 import os
 
 from pages import app_page, login
+#localhost:8501
 
 def hide_sidebar():
     """Hide sidebar via CSS."""

@@ -15,6 +15,8 @@ PROCESSED_DATA_PATH = config.PROCESSED_DATA_PATH
 RAW_DATA_PATH = config.RAW_DATA_PATH
 # IMG_PATH = config.IMG_PATH
 
+#http://127.0.0.1:8050/
+
 # example_image="IM0001_1_left.png"
 # example_image_path = os.path.join('assets', example_image)
 
