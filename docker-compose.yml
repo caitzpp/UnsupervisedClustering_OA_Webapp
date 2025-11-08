@@ -1,0 +1,28 @@
+version: '3.9'
+
+services:
+  streamlit_app:
+    build: .
+    container_name: streamlit_app
+    command: streamlit run streamlit_app/streamlit_app.py --server.port=8501 --server.address=0.0.0.0
+    ports:
+      - "8501:8501"
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+      - ./assets:/app/assets
+    depends_on:
+      - dash_app
+
+  dash_app:
+    build: .
+    container_name: dash_app
+    command: python dash_app/app.py
+    ports:
+      - "8050:8050"
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+      - ./assets:/app/assets
