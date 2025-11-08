@@ -4,8 +4,12 @@ from streamlit.components.v1 import iframe, html
 
 def show_graph():
     st.header('Embedding Explorer')
-    # st.markdown(f"[Link to Feedback Form]({config.GOOGLE_FORM_URL})")
-    st.markdown("Filler: scroll down for feedback form")
+    
+    with open("content/plotly_page.md", "r", encoding="utf-8") as f:
+        markdown_text = f.read()
+
+    st.markdown(markdown_text, unsafe_allow_html=True)
+
     iframe(config.PLOTLY_URL, width=1400, height=1200)
 
     html("""

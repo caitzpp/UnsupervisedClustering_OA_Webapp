@@ -15,8 +15,8 @@ def run_app():
     home_page = st.Page(home.show_home, title = "Home", icon=":material/home:")
     graph_page = st.Page(plotly_page.show_graph, title = "Embedding Explorer", icon=":material/biotech:")
     as_page = st.Page(cluster_page.show_clusterpage, title = "Cluster Gallery", icon=":material/imagesmode:")
-    about_page = st.Page(about.show_about, title = "About", icon=":material/info:")
+   # about_page = st.Page(about.show_about, title = "About", icon=":material/info:")
 
 
-    pg = st.navigation([home_page, graph_page, as_page, about_page])
+    pg = st.navigation([home_page, graph_page, as_page])
     return pg

@@ -25,7 +25,11 @@ trace_columns = ['cluster_label', 'KL-Score',
 
 def show_clusterpage():
     st.header('Cluster Gallery')
-    st.markdown(f"[Link to Feedback Form]({config.GOOGLE_FORM_URL})")
+    
+    with open("content/cluster_page.md", "r", encoding="utf-8") as f:
+        markdown_text = f.read()
+    st.markdown(markdown_text, unsafe_allow_html=True)
+    #st.markdown(f"[Link to Feedback Form]({config.GOOGLE_FORM_URL})")
 
     data_loader = ExtendedDataLoader(RAW_DATA_PATH, PROCESSED_DATA_PATH, folder, run)
     df, model_info, embeddings, ids = data_loader.load_pipeline_data()
