@@ -1,3 +1,4 @@
+import base64
 from loguru import logger
 import streamlit as st
 from streamlit.components.v1 import html
@@ -7,7 +8,7 @@ import os
 import posixpath
 
 from src.load_data import DataLoader, HDBSCAN_DataLoader, ExtendedDataLoader
-from src.azure_blob_storage import get_blob_container_client
+from src.azure_blob_storage import get_blob_container_client, blob_exists
 
 RAW_DATA_PATH = config.RAW_DATA_PATH
 PROCESSED_DATA_PATH = config.PROCESSED_DATA_PATH
@@ -75,7 +76,11 @@ def show_clusterpage():
 
     for i, (_, row) in enumerate(df_cluster.head(max_n).iterrows()):
         img_path = row['id'] + '.png'
-        if posixpath.exists(img_path):
+        if blob_exists(container_client, img_path):
+            blob_client = container_client.get_blob_client(img_path)
+            blob_data = blob_client.download_blob().readall()
+            encoded = base64.b64encode(blob_data).decode("utf-8")
+            img_path = f"data:image/png;base64,{encoded}"
             print(f"ImgPath exists {img_path}")
             with cols[i % 5]:
                 st.image(str(img_path), use_container_width=True)

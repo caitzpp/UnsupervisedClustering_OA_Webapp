@@ -19,3 +19,12 @@ def get_blob_container_client(container_name: str):
     except Exception as ex:
         print('Exception:')
         print(ex)
+
+
+def blob_exists(container_client, blob_name):
+    """Check if a blob exists in the container."""
+    try:
+        container_client.get_blob_client(blob_name).get_blob_properties()
+        return True
+    except Exception:
+        return False
