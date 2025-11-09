@@ -10,7 +10,7 @@ from azure.storage.blob import BlobServiceClient
 class DataLoader:
     def __init__(self, data_path: str = None, container_client=None):
         """
-        data_path: local path root (for dev mode)
+        data_path: default root path or prefix for all files.
         container_client: Azure Blob container client (for cloud mode)
         """
         self.data_path = data_path
@@ -20,60 +20,74 @@ class DataLoader:
 
     # ---------- Internal helpers ----------
 
-    def _build_path(self, filename: str) -> str:
-        """Join folder/file path consistently (local uses os.path, Azure uses posixpath)."""
-        if self.container_client:
-            import posixpath
-            return posixpath.join(self.data_path or "", filename)
+    def _build_path(self, filename: str, base_path: str = None, use_data_path: bool = True) -> str:
+        """
+        Build a path consistently for local or Azure Blob Storage.
+
+        Parameters:
+            filename (str): The file name or relative path to load.
+            base_path (str): Optional custom prefix or folder.
+            use_data_path (bool): Whether to include self.data_path as the base.
+        """
+        # Determine which base path to use
+        if base_path:
+            prefix = base_path
+        elif use_data_path:
+            prefix = self.data_path or ""
         else:
-            return os.path.join(self.data_path or "", filename)
+            prefix = ""
+
+        # Use posixpath for Azure blobs, os.path for local
+        if self.container_client:
+            full_path = posixpath.join(prefix, filename)
+        else:
+            full_path = os.path.join(prefix, filename)
+        return full_path
 
     def _read_blob(self, blob_name: str) -> bytes:
         """Download blob content into memory."""
+        logger.info(f"Attempting to read blob: {blob_name}")
         blob_client = self.container_client.get_blob_client(blob_name)
         return blob_client.download_blob().readall()
 
     # ---------- Loaders ----------
 
-    def load_csv(self, filename: str) -> pd.DataFrame:
+    def load_csv(self, filename: str, base_path: str = None, use_data_path: bool = True) -> pd.DataFrame:
+        blob_or_path = self._build_path(filename, base_path, use_data_path)
+
         if self.container_client:
-            blob_name = self._build_path(filename)
-            data = self._read_blob(blob_name)
+            data = self._read_blob(blob_or_path)
             df = pd.read_csv(io.BytesIO(data))
-            logger.info(f"Loaded CSV blob: {blob_name}")
-            return df
+            logger.info(f"Loaded CSV blob: {blob_or_path}")
         else:
-            df_path = self._build_path(filename)
-            df = pd.read_csv(df_path)
-            logger.info(f"Loaded local CSV: {df_path}")
-            return df
+            df = pd.read_csv(blob_or_path)
+            logger.info(f"Loaded local CSV: {blob_or_path}")
+        return df
 
-    def load_json(self, filename: str):
+    def load_json(self, filename: str, base_path: str = None, use_data_path: bool = True):
+        blob_or_path = self._build_path(filename, base_path, use_data_path)
+
         if self.container_client:
-            blob_name = self._build_path(filename)
-            data = self._read_blob(blob_name)
+            data = self._read_blob(blob_or_path)
             parsed = json.loads(data.decode("utf-8"))
-            logger.info(f"Loaded JSON blob: {blob_name}")
-            return parsed
+            logger.info(f"Loaded JSON blob: {blob_or_path}")
         else:
-            json_path = self._build_path(filename)
-            with open(json_path, "r") as f:
+            with open(blob_or_path, "r") as f:
                 parsed = json.load(f)
-            logger.info(f"Loaded local JSON: {json_path}")
-            return parsed
+            logger.info(f"Loaded local JSON: {blob_or_path}")
+        return parsed
 
-    def load_numpy(self, filename: str):
+    def load_numpy(self, filename: str, base_path: str = None, use_data_path: bool = True):
+        blob_or_path = self._build_path(filename, base_path, use_data_path)
+
         if self.container_client:
-            blob_name = self._build_path(filename)
-            data = self._read_blob(blob_name)
+            data = self._read_blob(blob_or_path)
             array = np.load(io.BytesIO(data))
-            logger.info(f"Loaded NumPy blob: {blob_name}")
-            return array
+            logger.info(f"Loaded NumPy blob: {blob_or_path}")
         else:
-            npy_path = self._build_path(filename)
-            array = np.load(npy_path)
-            logger.info(f"Loaded local NumPy: {npy_path}")
-            return array
+            array = np.load(blob_or_path)
+            logger.info(f"Loaded local NumPy: {blob_or_path}")
+        return array
 
 class HDBSCAN_DataLoader(DataLoader):
     def __init__(self, base_path: str, folder: str, run: str, modality: str = 'pipeline'):
@@ -295,10 +309,11 @@ class ExtendedDataLoader(HDBSCAN_DataLoader):
         
         if self.container_client:
             import posixpath
-            mri_path = posixpath.join(self.raw_data_path, mri_filename)
+            mri_path = posixpath.join(mri_filename)
+            logger.info(f"Loading MRI data from blob: {mri_path}")
         else:
             mri_path = os.path.join(self.raw_data_path, mri_filename)
-        mri_df = self.load_csv(mri_path)
+        mri_df = self.load_csv(mri_path, base_path=self.raw_data_path)
 
         merge_cols = [
             'mri_bml_yn', 'mri_cart_yn', 'mri_osteo_yn',
@@ -325,8 +340,9 @@ class ExtendedDataLoader(HDBSCAN_DataLoader):
             as_path = posixpath.join(self.base_path, as_folder)
         else:
             as_path = os.path.join(self.base_path, as_folder)
-        as_dataloader = DataLoader(as_path)
-        self.as_df = as_dataloader.load_csv(as_file)
+        logger.info(f"Loading anomaly scores from: {as_path}/{as_file}")
+        # as_dataloader = DataLoader(as_path)
+        self.as_df = self.load_csv(as_file, base_path = as_path)
         self.as_df = self.clean_id(id_column='id', split_char='.')
         logger.info(f"Anomaly scores loaded from: {as_file}")
         return self.as_df
