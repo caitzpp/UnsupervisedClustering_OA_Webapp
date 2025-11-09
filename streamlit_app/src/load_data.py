@@ -1,3 +1,4 @@
+import posixpath
 from loguru import logger
 import os
 import io
@@ -24,7 +25,8 @@ class DataLoader:
         if self.container_client:
             import posixpath
             return posixpath.join(self.data_path or "", filename)
-        return os.path.join(self.data_path or "", filename)
+        else:
+            return os.path.join(self.data_path or "", filename)
 
     def _read_blob(self, blob_name: str) -> bytes:
         """Download blob content into memory."""
@@ -75,7 +77,11 @@ class DataLoader:
 
 class HDBSCAN_DataLoader(DataLoader):
     def __init__(self, base_path: str, folder: str, run: str, modality: str = 'pipeline'):
-        file_path = os.path.join(base_path, folder, modality, run)
+        if self.container_client:
+            import posixpath
+            file_path = posixpath.join(base_path, folder, modality, run)
+        else:
+            file_path = os.path.join(base_path, folder, modality, run)
         self.base_path = base_path
         super().__init__(file_path)
         self.run = run
@@ -287,7 +293,11 @@ class ExtendedDataLoader(HDBSCAN_DataLoader):
         if self.df is None:
             raise ValueError("Call load_pipeline_data() before merging MRI data.")
         
-        mri_path = os.path.join(self.raw_data_path, mri_filename)
+        if self.container_client:
+            import posixpath
+            mri_path = posixpath.join(self.raw_data_path, mri_filename)
+        else:
+            mri_path = os.path.join(self.raw_data_path, mri_filename)
         mri_df = pd.read_csv(mri_path)
 
         merge_cols = [
@@ -310,7 +320,11 @@ class ExtendedDataLoader(HDBSCAN_DataLoader):
         return self.as_df
     
     def load_anomaly_scores(self, as_folder: str, as_file: str):
-        as_path = os.path.join(self.base_path, as_folder)
+        if self.container_client:
+            import posixpath
+            as_path = posixpath.join(self.base_path, as_folder)
+        else:
+            as_path = os.path.join(self.base_path, as_folder)
         as_dataloader = DataLoader(as_path)
         self.as_df = as_dataloader.load_csv(as_file)
         self.as_df = self.clean_id(id_column='id', split_char='.')
