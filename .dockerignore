@@ -1,0 +1,47 @@
+# Python cache and compiled files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+
+# Virtual environments
+venv/
+.env/
+*.env
+
+# System and IDE files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Streamlit cache
+.streamlit/cache/
+.streamlit/logs/
+
+# Jupyter notebooks checkpoints (if any)
+.ipynb_checkpoints/
+
+# Data & output (if you generate temp data)
+*.csv
+*.tsv
+*.parquet
+*.pkl
+*.h5
+*.zip
+*.tar
+*.gz
+
+# Temporary or local-only directories
+tmp/
+logs/
+uploads/
+traces/
+
+# Docker
+docker-compose.override.yml
