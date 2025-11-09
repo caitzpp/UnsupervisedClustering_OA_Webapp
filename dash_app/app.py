@@ -144,26 +144,48 @@ fig2.update_layout(scene = dict(
 )
 
 
-app.layout = html.Div([
-    html.Div([
-        dcc.Dropdown(options = ['Clusters', 'KL-Scores',  'Noise Points'],
-            value='Clusters', id='scatter_radioitem', clearable=False
-            ,style={'width': '200px', 'marginBottom': '10px'}),
-    ]),
-    html.Div([
-            dcc.Graph(figure={}, id='scatter' 
-               , style={'width': '64%', 'height': '80vh'}),
-            html.Img(src="", id='image-display',
-                    style={'display': 'none'}),
+if len(mappings_noise) == 0:
+    app.layout = html.Div([
+        html.Div([
+            dcc.Dropdown(options = ['Clusters', 'KL-Scores'],
+                value='Clusters', id='scatter_radioitem', clearable=False
+                ,style={'width': '200px', 'marginBottom': '10px'}),
+        ]),
+        html.Div([
+                dcc.Graph(figure={}, id='scatter' 
+                , style={'width': '64%', 'height': '80vh'}),
+                html.Img(src="", id='image-display',
+                        style={'display': 'none'}),
 
-    ], style={
-        'display': 'flex',     
-        'flexDirection': 'row',  
-        'justify-content': 'center',
-        'align-items': 'center',
-        'gap': '10px'
-    })
-])
+        ], style={
+            'display': 'flex',     
+            'flexDirection': 'row',  
+            'justify-content': 'center',
+            'align-items': 'center',
+            'gap': '10px'
+        })
+    ])
+else:
+    app.layout = html.Div([
+        html.Div([
+            dcc.Dropdown(options = ['Clusters', 'KL-Scores', 'Noise Points'],
+                value='Clusters', id='scatter_radioitem', clearable=False
+                ,style={'width': '200px', 'marginBottom': '10px'}),
+        ]),
+        html.Div([
+                dcc.Graph(figure={}, id='scatter' 
+                , style={'width': '64%', 'height': '80vh'}),
+                html.Img(src="", id='image-display',
+                        style={'display': 'none'}),
+
+        ], style={
+            'display': 'flex',     
+            'flexDirection': 'row',  
+            'justify-content': 'center',
+            'align-items': 'center',
+            'gap': '10px'
+        })
+    ])
 
 @callback(
     Output('scatter', 'figure'),
@@ -205,6 +227,6 @@ def show_image(clickData):
 
 
 if __name__ == '__main__':
-    app.run(debug=False)
+    app.run(host ='0.0.0.0', port=8050, debug=False)
 
 

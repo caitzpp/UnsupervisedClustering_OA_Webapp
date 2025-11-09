@@ -1,7 +1,7 @@
 cookie:
   expiry_days: 30
   key: anystring
-  name: anystring
+  name: newcookiename
 credentials:
   usernames:
     example:
