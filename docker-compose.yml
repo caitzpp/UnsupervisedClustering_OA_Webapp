@@ -9,9 +9,9 @@ services:
       - "8501:8501"
     env_file:
       - .env
-    volumes:
-      - .:/app
-      - ./assets:/app/assets
+    # volumes:
+      # - .:/app
+      # - ./assets:/app/assets
     depends_on:
       - dash_app
 
@@ -23,6 +23,6 @@ services:
       - "8050:8050"
     env_file:
       - .env
-    volumes:
-      - .:/app
-      - ./assets:/app/assets
+    # volumes:
+      # - .:/app
+      # - ./assets:/app/assets
