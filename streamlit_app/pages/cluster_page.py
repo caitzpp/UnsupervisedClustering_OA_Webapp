@@ -26,7 +26,7 @@ trace_columns = ['cluster_label', 'KL-Score',
 def show_clusterpage():
     st.header('Cluster Gallery')
     
-    with open("content/cluster_page.md", "r", encoding="utf-8") as f:
+    with open("streamlit_app/content/cluster_page.md", "r", encoding="utf-8") as f:
         markdown_text = f.read()
     st.markdown(markdown_text, unsafe_allow_html=True)
     #st.markdown(f"[Link to Feedback Form]({config.GOOGLE_FORM_URL})")

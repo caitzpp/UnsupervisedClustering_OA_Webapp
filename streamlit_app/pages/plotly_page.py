@@ -5,7 +5,7 @@ from streamlit.components.v1 import iframe, html
 def show_graph():
     st.header('Embedding Explorer')
     
-    with open("content/plotly_page.md", "r", encoding="utf-8") as f:
+    with open("streamlit_app/content/plotly_page.md", "r", encoding="utf-8") as f:
         markdown_text = f.read()
 
     st.markdown(markdown_text, unsafe_allow_html=True)

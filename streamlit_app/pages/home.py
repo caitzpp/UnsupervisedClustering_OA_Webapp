@@ -6,6 +6,6 @@ def show_home():
 
    # st.markdown(f"For feedback please use the following form: [Link]({config.GOOGLE_FORM_URL})")
 
-    with open("content/home.md", "r", encoding="utf-8") as f:
+    with open("streamlit_app/content/home.md", "r", encoding="utf-8") as f:
         markdown_text = f.read()
     st.markdown(markdown_text, unsafe_allow_html=True)

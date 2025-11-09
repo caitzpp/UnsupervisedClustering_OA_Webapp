@@ -14,7 +14,7 @@ def login_page():
     # """
     # st.markdown(hide_sidebar_style, unsafe_allow_html=True)
 
-    with open('login_info.yaml') as file:
+    with open('streamlit_app/login_info.yaml') as file:
         login_info = yaml.load(file, Loader=SafeLoader)
 
     authenticator = stauth.Authenticate(
