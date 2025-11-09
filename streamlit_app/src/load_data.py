@@ -1,33 +1,77 @@
 from loguru import logger
 import os
-import pandas as pd
+import io
 import json
 import numpy as np
-
+import pandas as pd
+from azure.storage.blob import BlobServiceClient
 
 class DataLoader:
-    def __init__(self, data_path: str):
+    def __init__(self, data_path: str = None, container_client=None):
+        """
+        data_path: local path root (for dev mode)
+        container_client: Azure Blob container client (for cloud mode)
+        """
         self.data_path = data_path
-        logger.info(f"DataLoader initialized with data path: {self.data_path}")
-    
-    def load_csv(self, filename: str):
-        df_path = os.path.join(self.data_path, filename)
-        df = pd.read_csv(df_path)
-        logger.info(f"Loaded CSV file: {df_path}")
-        return df
-    
+        self.container_client = container_client
+        mode = "Azure Blob" if container_client else "local"
+        logger.info(f"DataLoader initialized in {mode} mode with path: {self.data_path}")
+
+    # ---------- Internal helpers ----------
+
+    def _build_path(self, filename: str) -> str:
+        """Join folder/file path consistently (local uses os.path, Azure uses posixpath)."""
+        if self.container_client:
+            import posixpath
+            return posixpath.join(self.data_path or "", filename)
+        return os.path.join(self.data_path or "", filename)
+
+    def _read_blob(self, blob_name: str) -> bytes:
+        """Download blob content into memory."""
+        blob_client = self.container_client.get_blob_client(blob_name)
+        return blob_client.download_blob().readall()
+
+    # ---------- Loaders ----------
+
+    def load_csv(self, filename: str) -> pd.DataFrame:
+        if self.container_client:
+            blob_name = self._build_path(filename)
+            data = self._read_blob(blob_name)
+            df = pd.read_csv(io.BytesIO(data))
+            logger.info(f"Loaded CSV blob: {blob_name}")
+            return df
+        else:
+            df_path = self._build_path(filename)
+            df = pd.read_csv(df_path)
+            logger.info(f"Loaded local CSV: {df_path}")
+            return df
+
     def load_json(self, filename: str):
-        json_path = os.path.join(self.data_path, filename)
-        with open(json_path, 'r') as f:
-            data = json.load(f)
-        logger.info(f"Loaded JSON file: {json_path}")
-        return data
-    
+        if self.container_client:
+            blob_name = self._build_path(filename)
+            data = self._read_blob(blob_name)
+            parsed = json.loads(data.decode("utf-8"))
+            logger.info(f"Loaded JSON blob: {blob_name}")
+            return parsed
+        else:
+            json_path = self._build_path(filename)
+            with open(json_path, "r") as f:
+                parsed = json.load(f)
+            logger.info(f"Loaded local JSON: {json_path}")
+            return parsed
+
     def load_numpy(self, filename: str):
-        npy_path = os.path.join(self.data_path, filename)
-        data = np.load(npy_path)
-        logger.info(f"Loaded Numpy file: {npy_path}")
-        return data
+        if self.container_client:
+            blob_name = self._build_path(filename)
+            data = self._read_blob(blob_name)
+            array = np.load(io.BytesIO(data))
+            logger.info(f"Loaded NumPy blob: {blob_name}")
+            return array
+        else:
+            npy_path = self._build_path(filename)
+            array = np.load(npy_path)
+            logger.info(f"Loaded local NumPy: {npy_path}")
+            return array
 
 class HDBSCAN_DataLoader(DataLoader):
     def __init__(self, base_path: str, folder: str, run: str, modality: str = 'pipeline'):

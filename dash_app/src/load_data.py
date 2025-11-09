@@ -1,37 +1,87 @@
+import posixpath
 from loguru import logger
 import os
-import pandas as pd
+import io
 import json
 import numpy as np
-
+import pandas as pd
+from azure.storage.blob import BlobServiceClient
 
 class DataLoader:
-    def __init__(self, data_path: str):
+    def __init__(self, data_path: str = None, container_client=None):
+        """
+        data_path: local path root (for dev mode)
+        container_client: Azure Blob container client (for cloud mode)
+        """
         self.data_path = data_path
-        logger.info(f"DataLoader initialized with data path: {self.data_path}")
-    
-    def load_csv(self, filename: str):
-        df_path = os.path.join(self.data_path, filename)
-        df = pd.read_csv(df_path)
-        logger.info(f"Loaded CSV file: {df_path}")
-        return df
-    
+        self.container_client = container_client
+        mode = "Azure Blob" if container_client else "local"
+        logger.info(f"DataLoader initialized in {mode} mode with path: {self.data_path}")
+
+    # ---------- Internal helpers ----------
+
+    def _build_path(self, filename: str) -> str:
+        """Join folder/file path consistently (local uses os.path, Azure uses posixpath)."""
+        if self.container_client:
+            import posixpath
+            return posixpath.join(self.data_path or "", filename)
+        else:
+            return os.path.join(self.data_path or "", filename)
+
+    def _read_blob(self, blob_name: str) -> bytes:
+        """Download blob content into memory."""
+        blob_client = self.container_client.get_blob_client(blob_name)
+        return blob_client.download_blob().readall()
+
+    # ---------- Loaders ----------
+
+    def load_csv(self, filename: str) -> pd.DataFrame:
+        if self.container_client:
+            blob_name = self._build_path(filename)
+            data = self._read_blob(blob_name)
+            df = pd.read_csv(io.BytesIO(data))
+            logger.info(f"Loaded CSV blob: {blob_name}")
+            return df
+        else:
+            df_path = self._build_path(filename)
+            df = pd.read_csv(df_path)
+            logger.info(f"Loaded local CSV: {df_path}")
+            return df
+
     def load_json(self, filename: str):
-        json_path = os.path.join(self.data_path, filename)
-        with open(json_path, 'r') as f:
-            data = json.load(f)
-        logger.info(f"Loaded JSON file: {json_path}")
-        return data
-    
+        if self.container_client:
+            blob_name = self._build_path(filename)
+            data = self._read_blob(blob_name)
+            parsed = json.loads(data.decode("utf-8"))
+            logger.info(f"Loaded JSON blob: {blob_name}")
+            return parsed
+        else:
+            json_path = self._build_path(filename)
+            with open(json_path, "r") as f:
+                parsed = json.load(f)
+            logger.info(f"Loaded local JSON: {json_path}")
+            return parsed
+
     def load_numpy(self, filename: str):
-        npy_path = os.path.join(self.data_path, filename)
-        data = np.load(npy_path)
-        logger.info(f"Loaded Numpy file: {npy_path}")
-        return data
+        if self.container_client:
+            blob_name = self._build_path(filename)
+            data = self._read_blob(blob_name)
+            array = np.load(io.BytesIO(data))
+            logger.info(f"Loaded NumPy blob: {blob_name}")
+            return array
+        else:
+            npy_path = self._build_path(filename)
+            array = np.load(npy_path)
+            logger.info(f"Loaded local NumPy: {npy_path}")
+            return array
 
 class HDBSCAN_DataLoader(DataLoader):
     def __init__(self, base_path: str, folder: str, run: str, modality: str = 'pipeline'):
-        file_path = os.path.join(base_path, folder, modality, run)
+        if self.container_client:
+            import posixpath
+            file_path = posixpath.join(base_path, folder, modality, run)
+        else:
+            file_path = os.path.join(base_path, folder, modality, run)
         self.base_path = base_path
         super().__init__(file_path)
         self.run = run
@@ -243,7 +293,11 @@ class ExtendedDataLoader(HDBSCAN_DataLoader):
         if self.df is None:
             raise ValueError("Call load_pipeline_data() before merging MRI data.")
         
-        mri_path = os.path.join(self.raw_data_path, mri_filename)
+        if self.container_client:
+            import posixpath
+            mri_path = posixpath.join(self.raw_data_path, mri_filename)
+        else:
+            mri_path = os.path.join(self.raw_data_path, mri_filename)
         mri_df = pd.read_csv(mri_path)
 
         merge_cols = [
@@ -266,7 +320,11 @@ class ExtendedDataLoader(HDBSCAN_DataLoader):
         return self.as_df
     
     def load_anomaly_scores(self, as_folder: str, as_file: str):
-        as_path = os.path.join(self.base_path, as_folder)
+        if self.container_client:
+            import posixpath
+            as_path = posixpath.join(self.base_path, as_folder)
+        else:
+            as_path = os.path.join(self.base_path, as_folder)
         as_dataloader = DataLoader(as_path)
         self.as_df = as_dataloader.load_csv(as_file)
         self.as_df = self.clean_id(id_column='id', split_char='.')

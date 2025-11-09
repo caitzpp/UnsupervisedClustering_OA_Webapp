@@ -4,15 +4,21 @@ from dash import Dash, html, dash_table, dcc, callback, Output, Input
 import plotly.express as px
 import plotly.graph_objects as go
 import os
+import posixpath
 import config
 import numpy as np
 import sys
 
 from src.load_data import HDBSCAN_DataLoader, DataLoader
+from src.azure_blob_storage import get_blob_container_client
 from traces.base import BaseTrace, BaseLegend
 
 PROCESSED_DATA_PATH = config.PROCESSED_DATA_PATH
 RAW_DATA_PATH = config.RAW_DATA_PATH
+
+container_client = get_blob_container_client("xray-img-st")
+blob_name = ""
+
 # IMG_PATH = config.IMG_PATH
 
 #http://127.0.0.1:8050/
@@ -25,10 +31,11 @@ folder = config.CLUSTER_FOLDER
 run = config.CLUSTER_RUN
 
 mri_file = '2025-09-25_mrismall.csv'
-raw_dataloader = DataLoader(RAW_DATA_PATH)
+raw_dataloader = DataLoader(RAW_DATA_PATH, container_client=container_client)
 mri_df = raw_dataloader.load_csv(mri_file)
 
 data_loader = HDBSCAN_DataLoader(PROCESSED_DATA_PATH, folder, run)
+data_loader.container_client = container_client
 df, model_info, embeddings, ids = data_loader.load_pipeline_data()
 df = df.merge(mri_df[['id', 'mri_bml_yn', 'mri_cart_yn', 'mri_osteo_yn', 'mri_syn_yn',
                'mri_mnsc_yn', 'mri_lig_yn']], left_on='id', right_on='id', how='left')
@@ -204,7 +211,16 @@ def update_scatter(selected_radio):
     Output('image-display', 'style'),
     Input('scatter', 'clickData')
     )
-def show_image(clickData):
+
+def blob_exists(container_client, blob_name):
+    """Check if a blob exists in the container."""
+    try:
+        container_client.get_blob_client(blob_name).get_blob_properties()
+        return True
+    except Exception:
+        return False
+    
+def show_image(clickData, container_client = None):
     if not clickData:
         return dash.no_update, {'display': 'none'}
     if clickData:
@@ -213,10 +229,27 @@ def show_image(clickData):
         cluster = point["customdata"][1]
         kl = point["customdata"][2]
 
+    test_name = posixpath.join(f"{id_}.png")
+    if container_client is not None:
+        if blob_exists(container_client=container_client, blob_name=test_name):
+            # Generate a temporary download URL (SAS or direct public link)
+            blob_client = container_client.get_blob_client(test_name)
+            image_url = blob_client.url  # works if blob is public or behind SAS
 
-        test = os.path.exists(os.path.join('assets', f"{id_}.png"))
+            return image_url, {
+                'width': '25%',
+                'height': 'auto',
+                'object-fit': 'contain',
+                'margin-left': '2%',
+                'display': 'block'
+            }
+
+        else:
+            return dash.no_update, {'display': 'none'}
+    else:
+        test = os.path.exists(os.path.join('assets', test_name))
         if test:
-            return os.path.join('assets', f"{id_}.png"), {'width': '25%',
+            return os.path.join('assets', test_name), {'width': '25%',
                         'height': 'auto',
                         'object-fit': 'contain', 
                         'margin-left': '2%',
