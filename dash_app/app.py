@@ -9,6 +9,7 @@ import posixpath
 import config
 import numpy as np
 import sys
+import base64
 
 from src.load_data import HDBSCAN_DataLoader, DataLoader
 from src.azure_blob_storage import get_blob_container_client
@@ -235,7 +236,10 @@ def show_image(clickData, container_client = container_client):
             blob_client = container_client.get_blob_client(test_name)
             blob_bytes = blob_client.download_blob().readall()
 
-            return io.BytesIO(blob_bytes), {
+            encoded = base64.b64encode(blob_bytes).decode("utf-8")
+            image_src = f"data:image/png;base64,{encoded}"
+
+            return image_src, {
                 'width': '25%',
                 'height': 'auto',
                 'object-fit': 'contain',
