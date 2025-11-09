@@ -77,7 +77,7 @@ class DataLoader:
 
 class HDBSCAN_DataLoader(DataLoader):
     def __init__(self, base_path: str, folder: str, run: str, modality: str = 'pipeline'):
-        if self.container_client:
+        if getattr(self, "container_client", None):
             import posixpath
             file_path = posixpath.join(base_path, folder, modality, run)
         else:
@@ -298,7 +298,7 @@ class ExtendedDataLoader(HDBSCAN_DataLoader):
             mri_path = posixpath.join(self.raw_data_path, mri_filename)
         else:
             mri_path = os.path.join(self.raw_data_path, mri_filename)
-        mri_df = pd.read_csv(mri_path)
+        mri_df = self.load_csv(mri_path)
 
         merge_cols = [
             'mri_bml_yn', 'mri_cart_yn', 'mri_osteo_yn',
