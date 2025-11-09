@@ -1,3 +1,4 @@
+import io
 import dash
 from dash import Dash, html, dash_table, dcc, callback, Output, Input
 # import pandas as pd
@@ -205,12 +206,7 @@ def update_scatter(selected_radio):
         return fig3
     else:
         return fig2
-    
-@callback(
-    Output('image-display', 'src'),
-    Output('image-display', 'style'),
-    Input('scatter', 'clickData')
-    )
+
 
 def blob_exists(container_client, blob_name):
     """Check if a blob exists in the container."""
@@ -219,8 +215,12 @@ def blob_exists(container_client, blob_name):
         return True
     except Exception:
         return False
-    
-def show_image(clickData, container_client = None):
+@callback(
+    Output('image-display', 'src'),
+    Output('image-display', 'style'),
+    Input('scatter', 'clickData')
+    )
+def show_image(clickData, container_client = container_client):
     if not clickData:
         return dash.no_update, {'display': 'none'}
     if clickData:
@@ -232,11 +232,10 @@ def show_image(clickData, container_client = None):
     test_name = posixpath.join(f"{id_}.png")
     if container_client is not None:
         if blob_exists(container_client=container_client, blob_name=test_name):
-            # Generate a temporary download URL (SAS or direct public link)
             blob_client = container_client.get_blob_client(test_name)
-            image_url = blob_client.url  # works if blob is public or behind SAS
+            blob_bytes = blob_client.download_blob().readall()
 
-            return image_url, {
+            return io.BytesIO(blob_bytes), {
                 'width': '25%',
                 'height': 'auto',
                 'object-fit': 'contain',
