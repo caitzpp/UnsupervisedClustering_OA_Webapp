@@ -37,9 +37,8 @@ def show_sidebar():
 
 
 if __name__ == "__main__":
-    login.login_page()
-
     if st.session_state.get('authentication_status') is False:
+        login.login_page()
         hide_sidebar()
         st.error("Username/password is incorrect")
         st.stop()

@@ -17,6 +17,10 @@ def login_page():
     with open('streamlit_app/login_info.yaml') as file:
         login_info = yaml.load(file, Loader=SafeLoader)
 
+    login_info['credentials']['usernames']['user1']['password'] = os.environ('PASSWORD_USER1')
+    login_info['credentials']['usernames']['user2']['password'] = os.environ('PASSWORD_USER2')
+    login_info['cookie']['key'] = os.environ('SECRET_KEY')
+
     authenticator = stauth.Authenticate(
         credentials=login_info['credentials'],
         cookie_name=login_info['cookie']['name'],
