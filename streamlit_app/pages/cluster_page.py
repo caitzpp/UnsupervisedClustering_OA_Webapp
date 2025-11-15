@@ -84,9 +84,9 @@ def show_clusterpage():
             print(f"ImgPath exists {img_path}")
             with cols[i % 5]:
                 st.image(str(img_path), use_container_width=True)
-        else:
-            with cols[i % 5]:
-                st.caption(f"Missing: {img_path.name}")
+        # else:
+        #     with cols[i % 5]:
+        #         st.caption(f"Missing: {img_path}")
 
     html("""
     <script async src="https://tally.so/widgets/embed.js"></script>
