@@ -3,6 +3,7 @@ import os
 import streamlit_authenticator as stauth
 import yaml
 from yaml.loader import SafeLoader
+import config
 
 
 
@@ -17,9 +18,9 @@ def login_page():
     with open('streamlit_app/login_info.yaml') as file:
         login_info = yaml.load(file, Loader=SafeLoader)
 
-    login_info['credentials']['usernames']['user1']['password'] = os.environ('PASSWORD_USER1')
-    login_info['credentials']['usernames']['user2']['password'] = os.environ('PASSWORD_USER2')
-    login_info['cookie']['key'] = os.environ('SECRET_KEY')
+    login_info['credentials']['usernames']['user1']['password'] = config.PASSWORD_USER1
+    login_info['credentials']['usernames']['user2']['password'] = config.PASSWORD_USER2
+    login_info['cookie']['key'] = config.SECRET_KEY
 
     authenticator = stauth.Authenticate(
         credentials=login_info['credentials'],
