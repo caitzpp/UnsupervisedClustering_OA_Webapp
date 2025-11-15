@@ -42,8 +42,9 @@ df, model_info, embeddings, ids = data_loader.load_pipeline_data()
 df = df.merge(mri_df[['id', 'mri_bml_yn', 'mri_cart_yn', 'mri_osteo_yn', 'mri_syn_yn',
                'mri_mnsc_yn', 'mri_lig_yn']], left_on='id', right_on='id', how='left')
 data_loader.df = df 
-trace_columns = ['cluster_label', 'KL-Score', 'mri_bml_yn', 'mri_cart_yn', 'mri_osteo_yn', 'mri_syn_yn',
-               'mri_mnsc_yn', 'mri_lig_yn']
+# trace_columns = ['cluster_label', 'KL-Score', 'mri_bml_yn', 'mri_cart_yn', 'mri_osteo_yn', 'mri_syn_yn',
+#                'mri_mnsc_yn', 'mri_lig_yn']
+trace_columns = ['cluster_label', 'KL-Score']
 mapping = data_loader.get_mapping(columns=trace_columns)
 
 trace_mappings = {k: i+1 for i, k in enumerate(trace_columns)}
