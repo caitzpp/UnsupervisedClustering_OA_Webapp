@@ -32,6 +32,10 @@ blob_name = ""
 folder = config.CLUSTER_FOLDER
 run = config.CLUSTER_RUN
 
+y_legend= 1.0
+t_value = 10 #topmargin
+
+
 mri_file = '2025-09-25_mrismall.csv'
 raw_dataloader = DataLoader(RAW_DATA_PATH, container_client=container_client)
 mri_df = raw_dataloader.load_csv(mri_file)
@@ -75,8 +79,8 @@ traces = []
 base = BaseTrace(embeddings, mapping)
 fig.add_trace(base.create_trace())
 
-legend_kl = BaseLegend(title='KL-Score', y=0.5)
-fig.update_layout(legend=legend_kl.create_legend())
+legend_kl = BaseLegend(title='KL-Score', y=y_legend)
+fig.update_layout(legend=legend_kl.create_legend(), margin=dict(t=t_value))
 
 kl_color = {kl: pal[i] for i, kl in enumerate(klvalues)}
 for kl in klvalues:
@@ -108,8 +112,8 @@ cluster_traces = []
 base3 = BaseTrace(embeddings, mapping)
 fig3.add_trace(base3.create_trace())
 
-legend_cluster = BaseLegend(title='Cluster Label', y=0.5)
-fig3.update_layout(legend=legend_cluster.create_legend())
+legend_cluster = BaseLegend(title='Cluster Label', y=y_legend)
+fig3.update_layout(legend=legend_cluster.create_legend(), margin=dict(t=t_value))
 
 cluster_color = {cl: pal[i] for i, cl in enumerate(clustervalues2)}
 for cl in sorted(clustervalues2):
@@ -137,8 +141,8 @@ fig3.update_layout(
 )
 
 fig2 = go.Figure()
-legend_noise = BaseLegend(title='Noise Points', y=0.9)
-fig2.update_layout(legend2=legend_noise.create_legend())
+legend_noise = BaseLegend(title='Noise Points', y=y_legend)
+fig2.update_layout(legend2=legend_noise.create_legend(), margin=dict(t=t_value))
 fig2.add_trace(base.create_trace())
 noise_trace = BaseTrace(embeddings_noise, mappings_noise, color='black', showlegend=True, legend="legend2",
                         name = 'Noise Points')
@@ -163,7 +167,7 @@ if len(mappings_noise) == 0:
         ]),
         html.Div([
                 dcc.Graph(figure={}, id='scatter' 
-                , style={'width': '64%', 'height': '80vh'}),
+                , style={'width': '80%', 'height': '80vh'}),
                 html.Img(src="", id='image-display',
                         style={'display': 'none'}),
 
@@ -172,7 +176,7 @@ if len(mappings_noise) == 0:
             'flexDirection': 'row',  
             'justify-content': 'center',
             'align-items': 'center',
-            'gap': '10px'
+            'gap': '1px'
         })
     ])
 else:
@@ -184,7 +188,9 @@ else:
         ]),
         html.Div([
                 dcc.Graph(figure={}, id='scatter' 
-                , style={'width': '64%', 'height': '80vh'}),
+                , style={'width': '80%', 'height': '80vh'
+                            # , 'marginTop': '50px'
+                            }),
                 html.Img(src="", id='image-display',
                         style={'display': 'none'}),
 
@@ -193,7 +199,7 @@ else:
             'flexDirection': 'row',  
             'justify-content': 'center',
             'align-items': 'center',
-            'gap': '10px'
+            'gap': '1px'
         })
     ])
 
@@ -244,7 +250,7 @@ def show_image(clickData, container_client = container_client):
                 'width': '25%',
                 'height': 'auto',
                 'object-fit': 'contain',
-                'margin-left': '2%',
+                'margin-left': '0.5%',
                 'display': 'block'
             }
 
@@ -264,6 +270,6 @@ def show_image(clickData, container_client = container_client):
 
 
 if __name__ == '__main__':
-    app.run(host ='0.0.0.0', port=8050, debug=False)
+    app.run(host ='0.0.0.0', port=8050, debug=True)
 
 

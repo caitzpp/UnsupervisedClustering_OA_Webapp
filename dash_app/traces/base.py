@@ -46,6 +46,10 @@ class BaseLegend:
             title= dict(text=self.title),
             xref="container",
             yref="container",
+            yanchor="top",
+            xanchor="right",
             y=self.y,
+            x=0.9,
+            orientation="h",
         )
         return legend
