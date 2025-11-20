@@ -1,7 +1,7 @@
 import base64
 from loguru import logger
 import streamlit as st
-from streamlit.components.v1 import html
+from streamlit.components.v1 import html, iframe
 import config
 import pandas as pd
 import os
@@ -93,26 +93,27 @@ def show_clusterpage():
             #         st.caption(f"Missing: {img_path}")
 
     with cols2:
-        html("""
-        <script async src="https://tally.so/widgets/embed.js"></script>
-        <button 
-            data-tally-open="XxlEkL" 
-            data-tally-width="1000" 
-            data-tally-emoji-text="👋" 
-            data-tally-emoji-animation="wave"
-            style="
-                background-color: #4CAF50;
-                color: white;
-                padding: 10px 20px;
-                font-size: 16px;
-                border: none;
-                border-radius: 8px;
-                cursor: pointer;
-            "
-            >
-            Open Feedback Form
-            </button>
-        """, height = 1000)
+        iframe("https://tally.so/embed/XxlEkL?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1", height=1000, width=400, scrolling=True)
+        # html("""
+        # <script async src="https://tally.so/widgets/embed.js"></script>
+        # <button 
+        #     data-tally-open="XxlEkL" 
+        #     data-tally-width="1000" 
+        #     data-tally-emoji-text="👋" 
+        #     data-tally-emoji-animation="wave"
+        #     style="
+        #         background-color: #4CAF50;
+        #         color: white;
+        #         padding: 10px 20px;
+        #         font-size: 16px;
+        #         border: none;
+        #         border-radius: 8px;
+        #         cursor: pointer;
+        #     "
+        #     >
+        #     Open Feedback Form
+        #     </button>
+        # """, height = 1000)
 
 
 if __name__ == "__main__":
