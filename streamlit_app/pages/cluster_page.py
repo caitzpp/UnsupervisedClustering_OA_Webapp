@@ -72,24 +72,27 @@ def show_clusterpage():
             
     st.markdown(f"### Showing {len(df_cluster[:max_n])} images for Cluster {selected_cluster}")
 
+    cols1, cols2 = st.columns([3, 1])
     n_cols = 3
-    cols = st.columns(n_cols + 2)
+    
 
-    for i, (_, row) in enumerate(df_cluster.head(max_n).iterrows()):
-        img_path = row['id'] + '.png'
-        if blob_exists(container_client, img_path):
-            blob_client = container_client.get_blob_client(img_path)
-            blob_data = blob_client.download_blob().readall()
-            encoded = base64.b64encode(blob_data).decode("utf-8")
-            img_path = f"data:image/png;base64,{encoded}"
-            print(f"ImgPath exists {img_path}")
-            with cols[i % n_cols]:
-                st.image(str(img_path), use_container_width=True)
-        # else:
-        #     with cols[i % 5]:
-        #         st.caption(f"Missing: {img_path}")
+    with cols1:
+        cols = st.columns(n_cols)
+        for i, (_, row) in enumerate(df_cluster.head(max_n).iterrows()):
+            img_path = row['id'] + '.png'
+            if blob_exists(container_client, img_path):
+                blob_client = container_client.get_blob_client(img_path)
+                blob_data = blob_client.download_blob().readall()
+                encoded = base64.b64encode(blob_data).decode("utf-8")
+                img_path = f"data:image/png;base64,{encoded}"
+                print(f"ImgPath exists {img_path}")
+                with cols[i % n_cols]:
+                    st.image(str(img_path), use_container_width=True)
+            # else:
+            #     with cols[i % 5]:
+            #         st.caption(f"Missing: {img_path}")
 
-    with cols[n_cols-2:n_cols+2]:
+    with cols2:
         html("""
         <script async src="https://tally.so/widgets/embed.js"></script>
         <button 
