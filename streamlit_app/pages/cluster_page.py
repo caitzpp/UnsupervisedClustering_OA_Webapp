@@ -50,6 +50,13 @@ def show_clusterpage():
         return
     
     cluster_list = sorted(df['cluster_label'].unique().tolist())
+
+    # for i in range(len(cluster_list)):
+    #     if cluster_list[i] == -1:
+    #         #replace with "noise point"
+    #         cluster_list[i] = "Noise Points"
+ 
+
     selected_cluster = st.selectbox('Select Cluster Label', cluster_list)
 
     max_n = st.slider('Number of images to display', min_value=1, max_value=100, value=20)
