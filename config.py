@@ -9,6 +9,7 @@ IMG_PATH = os.getenv("IMG_PATH")
 # PROCESSED_DATA_PATH = os.path.join(DATA_PATH, "processed")
 RAW_DATA_PATH = "raw"
 PROCESSED_DATA_PATH = "processed"
+CONTENT_PATH = "content"
 
 PLOTLY_URL = os.getenv("PLOTLY_URL", "http://127.0.0.1:8050/")
 

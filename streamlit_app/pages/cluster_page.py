@@ -12,6 +12,7 @@ from src.azure_blob_storage import get_blob_container_client, blob_exists
 
 RAW_DATA_PATH = config.RAW_DATA_PATH
 PROCESSED_DATA_PATH = config.PROCESSED_DATA_PATH
+# CONTENT_PATH = config.CONTENT_PATH
 folder = config.CLUSTER_FOLDER
 run = config.CLUSTER_RUN
 
@@ -31,6 +32,7 @@ container_client = get_blob_container_client("xray-img-st")
 def show_clusterpage():
     st.header('Cluster Gallery')
     
+    # md_path = posixpath.join(CONTENT_PATH, "cluster_page.md")
     with open("streamlit_app/content/cluster_page.md", "r", encoding="utf-8") as f:
         markdown_text = f.read()
     st.markdown(markdown_text, unsafe_allow_html=True)
