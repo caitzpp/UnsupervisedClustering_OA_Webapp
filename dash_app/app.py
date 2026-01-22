@@ -17,23 +17,19 @@ from traces.base import BaseTrace, BaseLegend
 
 PROCESSED_DATA_PATH = config.PROCESSED_DATA_PATH
 RAW_DATA_PATH = config.RAW_DATA_PATH
+IMG_PATH = config.IMG_PATH
+USE_LOCAL_ASSETS = config.USE_LOCAL_ASSETS
 
-container_client = get_blob_container_client("xray-img-st")
-blob_name = ""
+if USE_LOCAL_ASSETS==False:
+    container_client = get_blob_container_client("xray-img-st")
+    blob_name = ""
 
-# IMG_PATH = config.IMG_PATH
 
-#http://127.0.0.1:8050/
-
-# example_image="IM0001_1_left.png"
-# example_image_path = os.path.join('assets', example_image)
-
-#TODO: import this with args or env
 folder = config.CLUSTER_FOLDER
 run = config.CLUSTER_RUN
 
 y_legend= 1.0
-t_value = 10 #topmargin
+t_value = 10 
 
 
 mri_file = '2025-09-25_mrismall.csv'
@@ -238,7 +234,20 @@ def show_image(clickData, container_client = container_client):
         kl = point["customdata"][2]
 
     test_name = posixpath.join(f"{id_}.png")
-    if container_client is not None:
+    if USE_LOCAL_ASSETS==True:
+        img_path = os.path.join(IMG_PATH, test_name)
+        if os.path.exists(img_path):
+            print(f"ImgPath exists {img_path}")
+            return os.path.join('assets', img_path), {'width': '25%',
+                        'height': 'auto',
+                        'object-fit': 'contain', 
+                        'margin-left': '2%',
+                        'display': 'block'
+                    }
+        else:
+            return dash.no_update, {'display': 'none'}
+
+    elif USE_LOCAL_ASSETS==False:
         if blob_exists(container_client=container_client, blob_name=test_name):
             blob_client = container_client.get_blob_client(test_name)
             blob_bytes = blob_client.download_blob().readall()
@@ -256,17 +265,17 @@ def show_image(clickData, container_client = container_client):
 
         else:
             return dash.no_update, {'display': 'none'}
-    else:
-        test = os.path.exists(os.path.join('assets', test_name))
-        if test:
-            return os.path.join('assets', test_name), {'width': '25%',
-                        'height': 'auto',
-                        'object-fit': 'contain', 
-                        'margin-left': '2%',
-                        'display': 'block'
-                    }
-        else:
-            return dash.no_update, {'display': 'none'}
+    # else:
+    #     test = os.path.exists(os.path.join('assets', test_name))
+    #     if test:
+    #         return os.path.join('assets', test_name), {'width': '25%',
+    #                     'height': 'auto',
+    #                     'object-fit': 'contain', 
+    #                     'margin-left': '2%',
+    #                     'display': 'block'
+    #                 }
+    #     else:
+    #         return dash.no_update, {'display': 'none'}
 
 
 if __name__ == '__main__':
