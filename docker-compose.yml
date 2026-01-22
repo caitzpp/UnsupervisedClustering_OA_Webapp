@@ -12,8 +12,9 @@ services:
     env_file:
       - .env
     volumes:
-      # - .:/app
+      - .:/app
       - ./assets:/app/assets
+    # working_dir: /app
     depends_on:
       - dash_app
 
@@ -28,5 +29,6 @@ services:
     env_file:
       - .env
     volumes:
-      # - .:/app
+      - .:/app
       - ./assets:/app/assets
+    # working_dir: /app

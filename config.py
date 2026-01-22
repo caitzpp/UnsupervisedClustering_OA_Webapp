@@ -6,7 +6,11 @@ DATA_PATH = os.getenv("DATA_PATH")
 IMG_PATH = os.getenv("IMG_PATH")
 
 
-USE_LOCAL_ASSETS = os.getenv("USE_LOCAL_ASSETS", False)
+USE_LOCAL_ASSETS = os.getenv("USE_LOCAL_ASSETS", True)
+if USE_LOCAL_ASSETS == 'True':
+    USE_LOCAL_ASSETS=True
+else:
+    USE_LOCAL_ASSETS=False
 
 if USE_LOCAL_ASSETS:
     RAW_DATA_PATH = os.path.join(DATA_PATH, "raw")
@@ -27,5 +31,3 @@ EMBEDDING_GOOGLE_FORM_URL = os.getenv("EMBEDDING_GOOGLE_FORM_URL", None)
 SECRET_KEY = os.environ["SECRET_KEY"]
 PASSWORD_USER1 = os.environ["PASSWORD_USER1"]
 PASSWORD_USER2 = os.environ["PASSWORD_USER2"]
-
-VERSION_CSV = os.getenv("VERSION_CSV", "v1")

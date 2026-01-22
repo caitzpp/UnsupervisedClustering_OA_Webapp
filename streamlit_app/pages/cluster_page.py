@@ -16,7 +16,8 @@ PROCESSED_DATA_PATH = config.PROCESSED_DATA_PATH
 folder = config.CLUSTER_FOLDER
 run = config.CLUSTER_RUN
 USE_LOCAL_ASSETS =config.USE_LOCAL_ASSETS
-IMG_PATH = config.IMG_PATH
+IMG_PATH = config.DATA_PATH
+
 
 #TODO: get anomaly score
 #data/processed/outputs/dfs/ss/mod_smallimg3_ss_aggregated_scores.csv
@@ -33,7 +34,7 @@ if USE_LOCAL_ASSETS == False:
 else:
     container_client=None
 
-def show_clusterpage():
+def show_clusterpage(local_assets = USE_LOCAL_ASSETS):
     st.header('Cluster Gallery')
     
     # md_path = posixpath.join(CONTENT_PATH, "cluster_page.md")
@@ -44,7 +45,7 @@ def show_clusterpage():
 
     data_loader = ExtendedDataLoader(RAW_DATA_PATH, PROCESSED_DATA_PATH, folder, run)
 
-    if USE_LOCAL_ASSETS ==False:
+    if local_assets ==False:
         data_loader.container_client = container_client
     df, model_info, embeddings, ids = data_loader.load_pipeline_data()
     data_loader.merge_mri_data(mri_file)
@@ -94,15 +95,23 @@ def show_clusterpage():
         cols = st.columns(n_cols)
         for i, (_, row) in enumerate(df_cluster.head(max_n).iterrows()):
             img_name = row['id'] + '.png'
+            # print(img_name)
+            logger.info(img_name)
 
-            if USE_LOCAL_ASSETS==True:
-                img_path = os.path.join(IMG_PATH, img_name)
+            if local_assets==True:
+                logger.info("following local assets")
+                img_path = os.path.join('./assets', img_name)
+                logger.info(f"Imagepath = {img_path}")
+                print(f"Imagepath = {img_path}")
                 if os.path.exists(img_path):
                     print(f"ImgPath exists {img_path}")
-                    with cols[i % 5]:
+                    with cols[i % n_cols]:
                         st.image(str(img_path), use_container_width=True)
+                else:
+                    logger.info(f"ImgPath doesn't exist: {img_path}")
 
-            elif USE_LOCAL_ASSETS==False:
+            elif local_assets==False:
+                logger.info("following azure container path")
                 if blob_exists(container_client, img_name):
                     blob_client = container_client.get_blob_client(img_name)
                     blob_data = blob_client.download_blob().readall()
@@ -111,6 +120,8 @@ def show_clusterpage():
                     print(f"ImgPath exists {img_name}")
                     with cols[i % n_cols]:
                         st.image(str(img_name), use_container_width=True)
+            else:
+                logger.info("uselocal thing doesn't work")
             # else:
             #     with cols[i % 5]:
             #         st.caption(f"Missing: {img_path}")
@@ -140,4 +151,4 @@ def show_clusterpage():
 
 
 if __name__ == "__main__":
-    show_clusterpage()
+    show_clusterpage(local_assets=USE_LOCAL_ASSETS)

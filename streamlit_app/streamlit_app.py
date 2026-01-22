@@ -9,6 +9,7 @@ import yaml
 from yaml.loader import SafeLoader
 import config
 import os
+from loguru import logger
 
 from pages import app_page, login
 #localhost:8501
@@ -34,6 +35,25 @@ def show_sidebar():
         """,
         unsafe_allow_html=True,
     )
+
+@st.cache_resource
+def setup_logger():
+    os.makedirs("logs", exist_ok=True)
+
+    logger.remove()
+
+    logger.add(
+        "logs/streamlit.log",
+        level="INFO",
+        rotation="5 MB",
+        enqueue=False,  # critical
+        backtrace=True,
+        diagnose=False,
+    )
+
+    logger.info("Logger initialized")
+
+    return logger
 
 
 if __name__ == "__main__":

@@ -10,15 +10,30 @@ import config
 import numpy as np
 import sys
 import base64
+from loguru import logger
 
 from src.load_data import HDBSCAN_DataLoader, DataLoader
 from src.azure_blob_storage import get_blob_container_client
 from traces.base import BaseTrace, BaseLegend
 
+# logger.add(
+#     "logs/dash.log",
+#     level="INFO",
+#     rotation="5 MB",
+#       enqueue=False,  
+#     backtrace=True,
+#     diagnose=False,
+#     )
+
+# logger.remove()
+# logger.add(sys.stdout, level="INFO")
+
+
 PROCESSED_DATA_PATH = config.PROCESSED_DATA_PATH
 RAW_DATA_PATH = config.RAW_DATA_PATH
-IMG_PATH = config.IMG_PATH
+IMG_PATH = config.DATA_PATH
 USE_LOCAL_ASSETS = config.USE_LOCAL_ASSETS
+logger.info(f"USE_LOCAL_ASSETS: {USE_LOCAL_ASSETS}")
 
 if USE_LOCAL_ASSETS==False:
     container_client = get_blob_container_client("xray-img-st")
@@ -234,21 +249,26 @@ def show_image(clickData, container_client = container_client):
         cluster = point["customdata"][1]
         kl = point["customdata"][2]
 
-    test_name = posixpath.join(f"{id_}.png")
-    if USE_LOCAL_ASSETS==True:
-        img_path = os.path.join(IMG_PATH, test_name)
-        if os.path.exists(img_path):
-            print(f"ImgPath exists {img_path}")
-            return os.path.join('assets', img_path), {'width': '25%',
-                        'height': 'auto',
-                        'object-fit': 'contain', 
-                        'margin-left': '2%',
-                        'display': 'block'
-                    }
-        else:
-            return dash.no_update, {'display': 'none'}
+    # test_name = posixpath.join(f"{id_}.png")
+    # if USE_LOCAL_ASSETS==True:
+    #     img_path = os.path.join('../assets', f"{id_}.png") #assets/IM0001_1_left.png
+    #     # img_path = "/assets/IM0001_1_left.png"
+    #     # print(img_path)
+    #     logger.info(f"Img_path: {img_path}")
+    #     if os.path.exists(img_path):
+    #         print(f"ImgPath exists {img_path}")
+    #         return img_path, {'width': '25%',
+    #                     'height': 'auto',
+    #                     'object-fit': 'contain', 
+    #                     'margin-left': '2%',
+    #                     'display': 'block'
+    #                 }
+    #     else:
+    #         logger.info(f"ImgPath doesn't exist: {img_path}")
+    #         return dash.no_update, {'display': 'none'}
 
-    elif USE_LOCAL_ASSETS==False:
+    if USE_LOCAL_ASSETS==False:
+        test_name = posixpath.join(f"{id_}.png")
         if blob_exists(container_client=container_client, blob_name=test_name):
             blob_client = container_client.get_blob_client(test_name)
             blob_bytes = blob_client.download_blob().readall()
@@ -266,20 +286,26 @@ def show_image(clickData, container_client = container_client):
 
         else:
             return dash.no_update, {'display': 'none'}
-    # else:
-    #     test = os.path.exists(os.path.join('assets', test_name))
-    #     if test:
-    #         return os.path.join('assets', test_name), {'width': '25%',
-    #                     'height': 'auto',
-    #                     'object-fit': 'contain', 
-    #                     'margin-left': '2%',
-    #                     'display': 'block'
-    #                 }
-    #     else:
-    #         return dash.no_update, {'display': 'none'}
+    elif USE_LOCAL_ASSETS==True:
+        # test_name = 'IM3023_2_right.png'
+        img_path = os.path.join('./assets', f'{id_}.png')
+        test = os.path.exists(img_path)
+        if test:
+            with open(img_path, "rb") as f:
+                image_bytes = f.read()
+            encoded = base64.b64encode(image_bytes).decode()
+            image_src = f"data:image/png;base64,{encoded}"
+            return image_src, {'width': '25%', #app.get_asset_url(test_name)
+                        'height': 'auto',
+                        'object-fit': 'contain', 
+                        'margin-left': '0.5%',
+                        'display': 'block'
+                    }
+        else:
+            return dash.no_update, {'display': 'none'}
 
 
 if __name__ == '__main__':
-    app.run(host ='0.0.0.0', port=8050, debug=False)
+    app.run(host ='0.0.0.0', port=8050, debug=True)
 
 
