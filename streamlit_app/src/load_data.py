@@ -307,12 +307,12 @@ class ExtendedDataLoader(HDBSCAN_DataLoader):
         if self.df is None:
             raise ValueError("Call load_pipeline_data() before merging MRI data.")
         
-        if self.container_client:
+        if self.container_client is not None:
             import posixpath
             mri_path = posixpath.join(mri_filename)
             logger.info(f"Loading MRI data from blob: {mri_path}")
         else:
-            mri_path = os.path.join(self.raw_data_path, mri_filename)
+            mri_path = mri_filename #os.path.join(self.raw_data_path, mri_filename)
         mri_df = self.load_csv(mri_path, base_path=self.raw_data_path)
 
         merge_cols = [

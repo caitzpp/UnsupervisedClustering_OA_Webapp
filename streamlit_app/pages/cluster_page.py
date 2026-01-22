@@ -15,7 +15,7 @@ PROCESSED_DATA_PATH = config.PROCESSED_DATA_PATH
 # CONTENT_PATH = config.CONTENT_PATH
 folder = config.CLUSTER_FOLDER
 run = config.CLUSTER_RUN
-USE_LOCAL_ASSETS =True
+USE_LOCAL_ASSETS =config.USE_LOCAL_ASSETS
 IMG_PATH = config.IMG_PATH
 
 #TODO: get anomaly score
@@ -30,6 +30,8 @@ trace_columns = ['cluster_label', 'KL-Score',
                ]
 if USE_LOCAL_ASSETS == False:
     container_client = get_blob_container_client("xray-img-st")
+else:
+    container_client=None
 
 def show_clusterpage():
     st.header('Cluster Gallery')

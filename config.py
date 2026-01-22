@@ -5,10 +5,15 @@ load_dotenv()
 DATA_PATH = os.getenv("DATA_PATH")
 IMG_PATH = os.getenv("IMG_PATH")
 
-# RAW_DATA_PATH = os.path.join(DATA_PATH, "raw")
-# PROCESSED_DATA_PATH = os.path.join(DATA_PATH, "processed")
-RAW_DATA_PATH = "raw"
-PROCESSED_DATA_PATH = "processed"
+
+USE_LOCAL_ASSETS = os.getenv("USE_LOCAL_ASSETS", False)
+
+if USE_LOCAL_ASSETS:
+    RAW_DATA_PATH = os.path.join(DATA_PATH, "raw")
+    PROCESSED_DATA_PATH = os.path.join(DATA_PATH, "processed")
+else:
+    RAW_DATA_PATH = "raw"
+    PROCESSED_DATA_PATH = "processed"
 CONTENT_PATH = "content"
 
 PLOTLY_URL = os.getenv("PLOTLY_URL", "http://127.0.0.1:8050/")
@@ -24,5 +29,3 @@ PASSWORD_USER1 = os.environ["PASSWORD_USER1"]
 PASSWORD_USER2 = os.environ["PASSWORD_USER2"]
 
 VERSION_CSV = os.getenv("VERSION_CSV", "v1")
-
-USE_LOCAL_ASSETS = os.getenv("USE_LOCAL_ASSETS", False)

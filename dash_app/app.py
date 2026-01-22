@@ -23,7 +23,8 @@ USE_LOCAL_ASSETS = config.USE_LOCAL_ASSETS
 if USE_LOCAL_ASSETS==False:
     container_client = get_blob_container_client("xray-img-st")
     blob_name = ""
-
+else:
+    container_client=None
 
 folder = config.CLUSTER_FOLDER
 run = config.CLUSTER_RUN
