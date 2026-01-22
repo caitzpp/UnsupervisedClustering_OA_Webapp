@@ -15,6 +15,8 @@ PROCESSED_DATA_PATH = config.PROCESSED_DATA_PATH
 # CONTENT_PATH = config.CONTENT_PATH
 folder = config.CLUSTER_FOLDER
 run = config.CLUSTER_RUN
+USE_LOCAL_ASSETS =True
+IMG_PATH = config.IMG_PATH
 
 #TODO: get anomaly score
 #data/processed/outputs/dfs/ss/mod_smallimg3_ss_aggregated_scores.csv
@@ -26,8 +28,8 @@ trace_columns = ['cluster_label', 'KL-Score',
             #      'mri_bml_yn', 'mri_cart_yn', 'mri_osteo_yn', 'mri_syn_yn',
             #    'mri_mnsc_yn', 'mri_lig_yn'
                ]
-
-container_client = get_blob_container_client("xray-img-st")
+if USE_LOCAL_ASSETS == False:
+    container_client = get_blob_container_client("xray-img-st")
 
 def show_clusterpage():
     st.header('Cluster Gallery')
@@ -39,7 +41,9 @@ def show_clusterpage():
     #st.markdown(f"[Link to Feedback Form]({config.GOOGLE_FORM_URL})")
 
     data_loader = ExtendedDataLoader(RAW_DATA_PATH, PROCESSED_DATA_PATH, folder, run)
-    data_loader.container_client = container_client
+
+    if USE_LOCAL_ASSETS ==False:
+        data_loader.container_client = container_client
     df, model_info, embeddings, ids = data_loader.load_pipeline_data()
     data_loader.merge_mri_data(mri_file)
     data_loader.load_anomaly_scores(as_folder, as_file)
@@ -83,20 +87,28 @@ def show_clusterpage():
 
     cols1, cols2 = st.columns([3, 1])
     n_cols = 3
-    
 
     with cols1:
         cols = st.columns(n_cols)
         for i, (_, row) in enumerate(df_cluster.head(max_n).iterrows()):
-            img_path = row['id'] + '.png'
-            if blob_exists(container_client, img_path):
-                blob_client = container_client.get_blob_client(img_path)
-                blob_data = blob_client.download_blob().readall()
-                encoded = base64.b64encode(blob_data).decode("utf-8")
-                img_path = f"data:image/png;base64,{encoded}"
-                print(f"ImgPath exists {img_path}")
-                with cols[i % n_cols]:
-                    st.image(str(img_path), use_container_width=True)
+            img_name = row['id'] + '.png'
+
+            if USE_LOCAL_ASSETS==True:
+                img_path = os.path.join(IMG_PATH, img_name)
+                if os.path.exists(img_path):
+                    print(f"ImgPath exists {img_path}")
+                    with cols[i % 5]:
+                        st.image(str(img_path), use_container_width=True)
+
+            elif USE_LOCAL_ASSETS==False:
+                if blob_exists(container_client, img_name):
+                    blob_client = container_client.get_blob_client(img_name)
+                    blob_data = blob_client.download_blob().readall()
+                    encoded = base64.b64encode(blob_data).decode("utf-8")
+                    img_name = f"data:image/png;base64,{encoded}"
+                    print(f"ImgPath exists {img_name}")
+                    with cols[i % n_cols]:
+                        st.image(str(img_name), use_container_width=True)
             # else:
             #     with cols[i % 5]:
             #         st.caption(f"Missing: {img_path}")
