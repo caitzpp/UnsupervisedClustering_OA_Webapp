@@ -17,6 +17,7 @@ folder = config.CLUSTER_FOLDER
 run = config.CLUSTER_RUN
 USE_LOCAL_ASSETS =config.USE_LOCAL_ASSETS
 IMG_PATH = config.DATA_PATH
+modality = config.MODALITY
 
 
 #TODO: get anomaly score
@@ -43,7 +44,7 @@ def show_clusterpage(local_assets = USE_LOCAL_ASSETS):
     st.markdown(markdown_text, unsafe_allow_html=True)
     #st.markdown(f"[Link to Feedback Form]({config.GOOGLE_FORM_URL})")
 
-    data_loader = ExtendedDataLoader(RAW_DATA_PATH, PROCESSED_DATA_PATH, folder, run)
+    data_loader = ExtendedDataLoader(RAW_DATA_PATH, PROCESSED_DATA_PATH, folder, run, modality=modality)
 
     if local_assets ==False:
         data_loader.container_client = container_client

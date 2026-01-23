@@ -22,6 +22,7 @@ CONTENT_PATH = "content"
 
 PLOTLY_URL = os.getenv("PLOTLY_URL", "http://127.0.0.1:8050/")
 
+MODALITY=os.getenv("MODALITY", "pipeline")
 CLUSTER_FOLDER = os.getenv("CLUSTER_FOLDER", "2025-10-19_hdbscan")
 CLUSTER_RUN = os.getenv("CLUSTER_RUN", "run27")
 

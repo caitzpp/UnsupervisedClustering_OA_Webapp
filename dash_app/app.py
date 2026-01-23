@@ -43,6 +43,7 @@ else:
 
 folder = config.CLUSTER_FOLDER
 run = config.CLUSTER_RUN
+modality = config.MODALITY
 
 y_legend= 1.0
 t_value = 10 
@@ -52,14 +53,15 @@ mri_file = '2025-09-25_mrismall.csv'
 raw_dataloader = DataLoader(RAW_DATA_PATH, container_client=container_client)
 mri_df = raw_dataloader.load_csv(mri_file)
 
-data_loader = HDBSCAN_DataLoader(PROCESSED_DATA_PATH, folder, run)
+data_loader = HDBSCAN_DataLoader(PROCESSED_DATA_PATH, folder, run, modality=modality)
 data_loader.container_client = container_client
 df, model_info, embeddings, ids = data_loader.load_pipeline_data()
 df = df.merge(mri_df[['id', 'mri_bml_yn', 'mri_cart_yn', 'mri_osteo_yn', 'mri_syn_yn',
                'mri_mnsc_yn', 'mri_lig_yn']], left_on='id', right_on='id', how='left')
 data_loader.df = df 
 trace_columns = ['cluster_label', 'KL-Score', 'mri_bml_yn', 'mri_cart_yn', 'mri_osteo_yn', 'mri_syn_yn',
-               'mri_mnsc_yn', 'mri_lig_yn', 'id']
+               'mri_mnsc_yn', 'mri_lig_yn',
+               'id']
 # trace_columns = ['cluster_label', 'KL-Score']
 mapping = data_loader.get_mapping(columns=trace_columns)
 

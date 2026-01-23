@@ -106,21 +106,36 @@ class HDBSCAN_DataLoader(DataLoader):
         logger.info(f"HDBSCAN_DataLoader initialized for run: {self.run} and modality: {self.modality}")
 
     def load_pipeline_data(self):
-        df_filename = f'pipeline_{self.run}_umap_hdbscan_scaled_allpoints_wKL.csv'
-        json_filename = f'pipeline_{self.run}_umap_hdbscan_scaled_model_info.json'
-        embeddings_filename = 'X_umap_embeddings.npy'
-        
-        df = self.load_csv(df_filename)
-        model_info = self.load_json(json_filename)
-        ids = model_info['files']['ids']
-        embeddings = self.load_numpy(embeddings_filename)
+        if self.modality=='pipeline':
+            df_filename = f'pipeline_{self.run}_umap_hdbscan_scaled_allpoints_wKL.csv'
+            json_filename = f'pipeline_{self.run}_umap_hdbscan_scaled_model_info.json'
+            embeddings_filename = 'X_umap_embeddings.npy'
+
+            df = self.load_csv(df_filename)
+            embeddings = self.load_numpy(embeddings_filename)
+            model_info = self.load_json(json_filename)
+            ids = model_info['files']['ids']
+            
+        elif self.modality=='comb_modalities':
+            df_filename=f'comb_modalities_{self.run}_umap_hdbscan_severity_scores.csv'
+            json_filename = ''
+            embeddings_filename='X_umap_embeddings.npy'
+            embeddings_filenametest='X_test_umap_embeddings.npy'
+
+            df = self.load_csv(df_filename)
+            ids = df['id']
+
+            embeddings_train = self.load_numpy(embeddings_filename)
+            embeddings_test = self.load_numpy(embeddings_filenametest)
+
+            embeddings = np.concatenate([embeddings_train, embeddings_test], axis=0)
+            model_info = None
+
 
         self.df = df
         self.embeddings = embeddings
         self.ids = ids
-        
         return df, model_info, embeddings, ids
-    
     def get_mapping(self, columns: list = ['cluster_label', 'KL-Score']):
         if self.df is None:
             df, _, _, ids = self.load_pipeline_data()
