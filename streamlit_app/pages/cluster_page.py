@@ -51,7 +51,7 @@ def show_clusterpage(local_assets = USE_LOCAL_ASSETS):
     df, model_info, embeddings, ids = data_loader.load_pipeline_data()
     data_loader.merge_mri_data(mri_file)
     data_loader.load_anomaly_scores(as_folder, as_file)
-    data_loader.merge_anomaly_scores()
+    # data_loader.merge_anomaly_scores()
     df = data_loader.df
 
     expected_cols = {'cluster_label', 'id', 'mean'}

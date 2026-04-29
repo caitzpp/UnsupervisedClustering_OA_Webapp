@@ -88,6 +88,65 @@ pal = px.colors.qualitative.Safe
 
 app = Dash(__name__)
 
+def make_heatmap_figure(color_column):
+    fig = go.Figure()
+
+    fig.add_trace(
+        go.Scatter3d(
+            x=embeddings[:, 0],
+            y=embeddings[:, 1],
+            z=embeddings[:, 2],
+            mode="markers",
+            marker=dict(
+                size=4,
+                color=df[color_column],
+                colorscale="Viridis",
+                colorbar=dict(title=color_column),
+                opacity=0.9
+            ),
+            customdata=np.stack([
+                        df["id"].values,
+                        df["cluster_label"].values,
+                        df["KL-Score"].values,
+                        df['age'].values,
+                        df['ce_bmi'].values,
+                        df['ce_fm'].values,
+                        df['OKS_score'].values,
+                        df['KOOS_pain'].values,
+                        df['KOOS_symptoms'].values,
+                        df['KOOS_sport'].values,
+                        df['KOOS_adl'].values,
+                        df['KOOS_qol'].values
+                    ], axis=-1),
+           hovertemplate=
+                "ID: %{customdata[0]}<br>" +
+                "Cluster: %{customdata[1]}<br>" +
+                "KL: %{customdata[2]}<br>" +
+                "Age: %{customdata[3]}<br>" +
+                "BMI: %{customdata[4]}<br>" +
+                "Fat Mass: %{customdata[5]}<br>" +
+                "OKS Score: %{customdata[6]}<br>" +
+                "KOOS Pain: %{customdata[7]}<br>" +
+                "KOOS Symptoms: %{customdata[8]}<br>" +
+                "KOOS Sport: %{customdata[9]}<br>" +
+                "KOOS ADL: %{customdata[10]}<br>" +
+                "KOOS QoL: %{customdata[11]}<br>" +
+                f"{color_column}: %{{marker.color:.3f}}" +
+                "<extra></extra>"
+        )
+    )
+
+    fig.update_layout(
+        scene=dict(
+            xaxis_title="UMAP 1",
+            yaxis_title="UMAP 2",
+            zaxis_title="UMAP 3",
+        ),
+        scene_dragmode="turntable"
+    )
+
+    return fig
+
 fig = go.Figure()
 traces = []
 base = BaseTrace(embeddings, mapping)
@@ -175,10 +234,22 @@ fig2.update_layout(scene = dict(
 if len(mappings_noise) == 0:
     app.layout = html.Div([
         html.Div([
-            dcc.Dropdown(options = ['Clusters', 'KL-Scores'],
+            dcc.Dropdown(options = ['Clusters', 'KL-Scores', 'Noise Points'],
                 value='Clusters', id='scatter_radioitem', clearable=False
-                ,style={'width': '200px', 'marginBottom': '10px'}),
-        ]),
+                ,style={'width': '200px', 'marginBottom': '10px'}
+            ),
+          dcc.Dropdown(
+            id='color_mode',
+            options=[
+                {"label": "Categorical", "value": "categorical"},
+                {"label": "Mean (Anomaly Score)", "value": "mean"},
+                {"label": "Severity Score", "value": "severity_score"},
+            ],
+            value="categorical",
+            clearable=False,
+            style={'width': '260px'})
+        ], style = {"display": "flex", "gap": "15px"}
+        ),
         html.Div([
                 dcc.Graph(figure={}, id='scatter' 
                 , style={'width': '80%', 'height': '80vh'}),
@@ -198,8 +269,20 @@ else:
         html.Div([
             dcc.Dropdown(options = ['Clusters', 'KL-Scores', 'Noise Points'],
                 value='Clusters', id='scatter_radioitem', clearable=False
-                ,style={'width': '200px', 'marginBottom': '10px'}),
-        ]),
+                ,style={'width': '200px', 'marginBottom': '10px'}
+            ),
+          dcc.Dropdown(
+            id='color_mode',
+            options=[
+                {"label": "Categorical", "value": "categorical"},
+                {"label": "Mean (Anomaly Score)", "value": "mean"},
+                {"label": "Severity Score", "value": "severity_score"},
+            ],
+            value="categorical",
+            clearable=False,
+            style={'width': '260px'})
+        ], style = {"display": "flex", "gap": "15px"}
+        ),
         html.Div([
                 dcc.Graph(figure={}, id='scatter' 
                 , style={'width': '80%', 'height': '80vh'
@@ -219,12 +302,17 @@ else:
 
 @callback(
     Output('scatter', 'figure'),
-    Input('scatter_radioitem', 'value')
+    Input('scatter_radioitem', 'value'),
+    Input('color_mode', 'value')
 )
-def update_scatter(selected_radio):
-    if selected_radio == 'KL-Scores':
+def update_scatter(view_mode, color_mode):
+
+    if color_mode in ['mean', 'severity_score']:
+        return make_heatmap_figure(color_mode)
+    
+    if view_mode == 'KL-Scores':
         return fig
-    elif selected_radio == 'Clusters':
+    elif view_mode == 'Clusters':
         return fig3
     else:
         return fig2
